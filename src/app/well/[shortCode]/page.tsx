@@ -1,0 +1,387 @@
+'use client'
+
+import { useEffect, useState, use } from 'react'
+import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button, Well, Coin, StarRating, Confetti } from '@/components/ui'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { formatTimeRemaining } from '@/lib/utils'
+import type { Well as WellType, Wish } from '@/types/database'
+import { WishComposer } from '@/components/WishComposer'
+
+type PageParams = Promise<{ shortCode: string }>
+
+export default function WellPage({ params }: { params: PageParams }) {
+  const resolvedParams = use(params)
+  const { shortCode } = resolvedParams
+  const supabase = createClient()
+  const { user } = useAuth()
+
+  const [well, setWell] = useState<WellType | null>(null)
+  const [wishes, setWishes] = useState<Wish[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showComposer, setShowComposer] = useState(false)
+  const [currentWish, setCurrentWish] = useState<Wish | null>(null)
+  const [showRating, setShowRating] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [isFishing, setIsFishing] = useState(false)
+
+  const isOwner = user?.id === well?.user_id
+
+  useEffect(() => {
+    async function fetchWell() {
+      const { data: wellData, error: wellError } = await supabase
+        .from('wells')
+        .select('*')
+        .eq('short_code', shortCode)
+        .single()
+
+      if (wellError) {
+        setError('Well not found')
+        setIsLoading(false)
+        return
+      }
+
+      setWell(wellData)
+
+      // Fetch wishes if owner
+      if (user?.id === wellData.user_id) {
+        const { data: wishesData } = await supabase
+          .from('wishes')
+          .select('*')
+          .eq('well_id', wellData.id)
+          .order('created_at', { ascending: false })
+
+        if (wishesData) {
+          setWishes(wishesData)
+        }
+      }
+
+      setIsLoading(false)
+    }
+
+    fetchWell()
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel(`well-${shortCode}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wells',
+          filter: `short_code=eq.${shortCode}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            setWell(payload.new as WellType)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'wishes',
+        },
+        (payload) => {
+          if (isOwner) {
+            setWishes((prev) => [payload.new as Wish, ...prev])
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase, shortCode, user?.id, isOwner])
+
+  const handleFishCoin = async () => {
+    const unviewedWish = wishes.find((w) => !w.is_viewed && w.rating === null)
+    if (!unviewedWish) return
+
+    setIsFishing(true)
+
+    // Simulate fishing animation
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    setCurrentWish(unviewedWish)
+    setShowRating(true)
+    setIsFishing(false)
+  }
+
+  const handleRate = async (rating: number) => {
+    if (!currentWish || !well) return
+
+    // Update wish with rating
+    await supabase
+      .from('wishes')
+      .update({
+        rating,
+        is_viewed: true,
+        rated_at: new Date().toISOString(),
+      })
+      .eq('id', currentWish.id)
+
+    // Add points to sender if they're registered
+    if (currentWish.sender_id && rating > 0) {
+      await supabase.rpc('add_points', {
+        user_id: currentWish.sender_id,
+        points: rating,
+      })
+    }
+
+    // Update well average rating
+    await supabase.rpc('update_well_rating', { well_id: well.id })
+
+    // Update local state
+    setWishes((prev) =>
+      prev.map((w) =>
+        w.id === currentWish.id ? { ...w, rating, is_viewed: true } : w
+      )
+    )
+
+    setShowRating(false)
+    setCurrentWish(null)
+
+    // Check if well is complete
+    const allRated = wishes.every((w) => w.id === currentWish.id || w.rating !== null)
+    if (allRated && wishes.length >= well.wish_limit) {
+      setShowConfetti(true)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (error || !well) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="text-6xl mb-4">🔍</div>
+        <h1 className="text-2xl font-bold text-stone-800 mb-2">Well Not Found</h1>
+        <p className="text-stone-500 mb-6">This wishing well doesn&apos;t exist or has been removed.</p>
+        <Link href="/explore">
+          <Button>Browse Active Wells</Button>
+        </Link>
+      </main>
+    )
+  }
+
+  const unviewedCount = wishes.filter((w) => !w.is_viewed).length
+
+  return (
+    <main className="min-h-screen py-20 px-4">
+      <Confetti isActive={showConfetti} />
+
+      <div className="max-w-2xl mx-auto">
+        <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
+          <span className="text-2xl">🌟</span>
+          <span className="font-bold text-xl text-stone-800">Wishing Well</span>
+        </Link>
+
+        {/* Well Display */}
+        <Well
+          context={well.context}
+          wishCount={well.wish_count}
+          wishLimit={well.wish_limit}
+          isActive={well.is_active}
+          averageRating={well.average_rating}
+          coins={wishes.map((w) => ({
+            id: w.id,
+            sentenceStarter: w.sentence_starter,
+            descriptors: w.descriptors,
+            outcome: w.outcome,
+            emojis: w.emojis,
+            customText: w.custom_text,
+            gifUrl: w.gif_url,
+            senderAvatar: null,
+            rating: w.rating,
+            isViewed: w.is_viewed,
+          }))}
+          onFishCoin={isOwner ? handleFishCoin : undefined}
+          showFishButton={isOwner && unviewedCount > 0}
+        />
+
+        {/* Time remaining */}
+        {well.is_active && (
+          <div className="text-center mt-4 text-stone-500">
+            <span className="text-sm">⏱️ {formatTimeRemaining(well.expires_at)}</span>
+          </div>
+        )}
+
+        {/* Actions for visitors */}
+        {!isOwner && well.is_active && (
+          <div className="mt-8 text-center">
+            <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
+              Send a Wish
+            </Button>
+          </div>
+        )}
+
+        {/* Owner view - list of wishes */}
+        {isOwner && wishes.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
+            <div className="space-y-4">
+              {wishes.map((wish) => (
+                <motion.div
+                  key={wish.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl p-4 shadow border border-stone-100"
+                >
+                  <div className="flex items-start gap-4">
+                    <Coin
+                      wish={{
+                        sentenceStarter: wish.sentence_starter,
+                        descriptors: wish.descriptors,
+                        outcome: wish.outcome,
+                        emojis: wish.emojis,
+                        customText: wish.custom_text,
+                        gifUrl: wish.gif_url,
+                        rating: wish.rating,
+                      }}
+                      size="sm"
+                    />
+                    <div className="flex-1">
+                      <p className="text-stone-700">
+                        {wish.custom_text ||
+                          `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
+                      </p>
+                      {wish.emojis.length > 0 && (
+                        <p className="text-lg mt-1">{wish.emojis.join(' ')}</p>
+                      )}
+                      {wish.rating !== null ? (
+                        <div className="mt-2">
+                          <StarRating value={wish.rating} readonly size="sm" />
+                        </div>
+                      ) : (
+                        <button
+                          className="mt-2 text-sm text-rose-500 hover:underline"
+                          onClick={() => {
+                            setCurrentWish(wish)
+                            setShowRating(true)
+                          }}
+                        >
+                          Rate this wish
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Well closed message */}
+        {!well.is_active && (
+          <div className="mt-8 text-center bg-stone-50 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold text-stone-800 mb-2">
+              This well is closed
+            </h2>
+            <p className="text-stone-500">
+              {well.wish_count >= well.wish_limit
+                ? 'This well has collected all its wishes!'
+                : 'This well has expired.'}
+            </p>
+            <Link href="/explore" className="inline-block mt-4">
+              <Button variant="outline">Find Another Well</Button>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Wish Composer Modal */}
+      <AnimatePresence>
+        {showComposer && (
+          <WishComposer
+            wellId={well.id}
+            onClose={() => setShowComposer(false)}
+            onSuccess={() => {
+              setShowComposer(false)
+              // Refresh well data
+              setWell((prev) =>
+                prev ? { ...prev, wish_count: prev.wish_count + 1 } : prev
+              )
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Rating Modal */}
+      <AnimatePresence>
+        {showRating && currentWish && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <h2 className="text-xl font-semibold text-center text-stone-800 mb-4">
+                Rate this wish
+              </h2>
+
+              <div className="flex justify-center mb-6">
+                <Coin
+                  wish={{
+                    sentenceStarter: currentWish.sentence_starter,
+                    descriptors: currentWish.descriptors,
+                    outcome: currentWish.outcome,
+                    emojis: currentWish.emojis,
+                    customText: currentWish.custom_text,
+                    gifUrl: currentWish.gif_url,
+                  }}
+                  size="lg"
+                />
+              </div>
+
+              <div className="bg-stone-50 rounded-xl p-4 mb-6">
+                <p className="text-center text-stone-700">
+                  {currentWish.custom_text ||
+                    `${currentWish.sentence_starter} ${currentWish.descriptors.join(' + ')} ${currentWish.outcome}`}
+                </p>
+                {currentWish.emojis.length > 0 && (
+                  <p className="text-center text-lg mt-2">
+                    {currentWish.emojis.join(' ')}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-center mb-6">
+                <StarRating value={null} onChange={handleRate} size="lg" />
+              </div>
+
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setShowRating(false)
+                  setCurrentWish(null)
+                }}
+              >
+                Skip for now
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
+  )
+}
