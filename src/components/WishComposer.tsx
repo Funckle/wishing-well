@@ -118,7 +118,11 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
       if (insertError) throw insertError
 
       // Increment wish count
-      await supabase.rpc('increment_wish_count', { p_well_id: wellId })
+      const { error: rpcError } = await supabase.rpc('increment_wish_count', { p_well_id: wellId })
+      if (rpcError) {
+        console.error('RPC error:', rpcError)
+        throw rpcError
+      }
 
       // Show toss animation
       setShowToss(true)

@@ -103,7 +103,7 @@ FROM profiles
 WHERE username IS NOT NULL
 ORDER BY total_points DESC;
 
--- Function to increment wish count
+-- Function to increment wish count (SECURITY DEFINER allows anonymous users to update wells)
 CREATE OR REPLACE FUNCTION increment_wish_count(p_well_id UUID)
 RETURNS VOID AS $$
 BEGIN
@@ -116,7 +116,7 @@ BEGIN
   SET is_active = FALSE, closed_at = NOW()
   WHERE id = p_well_id AND wish_count >= wish_limit;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to update well average rating
 CREATE OR REPLACE FUNCTION update_well_rating(p_well_id UUID)

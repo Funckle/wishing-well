@@ -15,14 +15,63 @@ const WISH_LIMITS = [3, 5, 10, 25, 50, 100]
 
 export default function CreateWellPage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const supabase = createClient()
+
+  // Require authentication to create wells
+  if (!isLoading && !user) {
+    return (
+      <main className="min-h-screen py-20 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl shadow-xl p-8 border border-stone-100 text-center"
+          >
+            <div className="text-6xl mb-4">🌟</div>
+            <h1 className="text-2xl font-bold text-stone-800 mb-2">
+              Sign in to Create a Well
+            </h1>
+            <p className="text-stone-500 mb-6">
+              Create an account to open your wishing well, collect wishes,
+              and rate them to reward kind wishers.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link href="/login?redirect=/create">
+                <Button className="w-full">Sign In</Button>
+              </Link>
+              <Link href="/explore">
+                <Button variant="outline" className="w-full">
+                  Send Wishes Instead
+                </Button>
+              </Link>
+            </div>
+            <p className="text-stone-400 text-sm mt-6">
+              No account? You can still{' '}
+              <Link href="/explore" className="text-rose-500 hover:underline">
+                send wishes anonymously
+              </Link>
+            </p>
+          </motion.div>
+        </div>
+      </main>
+    )
+  }
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <main className="min-h-screen py-20 px-4 flex items-center justify-center">
+        <div className="text-stone-400">Loading...</div>
+      </main>
+    )
+  }
 
   const [step, setStep] = useState(1)
   const [context, setContext] = useState('')
   const [wishLimit, setWishLimit] = useState(10)
   const [notificationEmail, setNotificationEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdWell, setCreatedWell] = useState<{
     shortCode: string
@@ -35,7 +84,7 @@ export default function CreateWellPage() {
       return
     }
 
-    setIsLoading(true)
+    setIsSubmitting(true)
     setError(null)
 
     try {
@@ -44,7 +93,7 @@ export default function CreateWellPage() {
 
       const { error: insertError } = await supabase.from('wells').insert({
         short_code: shortCode,
-        user_id: user?.id || null,
+        user_id: user!.id,
         context: context.trim(),
         wish_limit: wishLimit,
         expires_at: expiresAt,
@@ -59,7 +108,7 @@ export default function CreateWellPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create well')
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -194,7 +243,7 @@ export default function CreateWellPage() {
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={handleCreate} isLoading={isLoading} className="flex-1">
+                <Button onClick={handleCreate} isLoading={isSubmitting} className="flex-1">
                   Create Well
                 </Button>
               </div>
@@ -257,23 +306,12 @@ export default function CreateWellPage() {
                 <Link href={`/well/${createdWell.shortCode}`}>
                   <Button className="w-full">View Your Well</Button>
                 </Link>
-                {user && (
-                  <Link href="/dashboard">
-                    <Button variant="outline" className="w-full">
-                      Go to Dashboard
-                    </Button>
-                  </Link>
-                )}
+                <Link href="/dashboard">
+                  <Button variant="outline" className="w-full">
+                    Go to Dashboard
+                  </Button>
+                </Link>
               </div>
-
-              {!user && (
-                <p className="text-stone-400 text-sm mt-6">
-                  <Link href="/login" className="text-rose-500 hover:underline">
-                    Sign in
-                  </Link>{' '}
-                  to manage your wells and get notified
-                </p>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
