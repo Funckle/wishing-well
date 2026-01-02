@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Button, Textarea, Input, ThemePicker } from '@/components/ui'
+import { Button, Textarea, Input, ThemePicker, BackgroundScene, Well } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { generateShortCode, getWellUrl } from '@/lib/utils'
 import { addDays } from 'date-fns'
-import { WELL_THEMES, BACKGROUND_THEMES } from '@/lib/themes'
+import { WELL_THEMES, BACKGROUND_THEMES, getWellThemeById, getBackgroundThemeById } from '@/lib/themes'
 
 const WISH_LIMITS = [3, 5, 10, 25, 50, 100]
 
@@ -192,8 +192,46 @@ export default function CreateWellPage() {
                 Well Settings
               </h1>
               <p className="text-stone-500 mb-6">
-                How many wishes would you like to collect?
+                Customize your wishing well
               </p>
+
+              {/* Live Preview */}
+              <div className="mb-8">
+                <p className="text-sm font-medium text-stone-600 mb-3">Preview</p>
+                <div className="relative overflow-hidden rounded-2xl border border-stone-200">
+                  {(() => {
+                    const bgTheme = getBackgroundThemeById(backgroundTheme)
+                    const previewContent = (
+                      <div className="flex justify-center py-6">
+                        <div className="transform scale-75 origin-center">
+                          <Well
+                            context={context || "Your wish context will appear here..."}
+                            wishCount={0}
+                            wishLimit={wishLimit}
+                            isActive={true}
+                            wellTheme={wellTheme}
+                            coins={[]}
+                          />
+                        </div>
+                      </div>
+                    )
+
+                    if (bgTheme) {
+                      return (
+                        <BackgroundScene theme={bgTheme}>
+                          {previewContent}
+                        </BackgroundScene>
+                      )
+                    }
+
+                    return (
+                      <div className="bg-gradient-to-b from-stone-50 to-stone-100">
+                        {previewContent}
+                      </div>
+                    )
+                  })()}
+                </div>
+              </div>
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-stone-700 mb-3">

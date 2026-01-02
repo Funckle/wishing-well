@@ -12,6 +12,8 @@ interface WellProps {
   isActive: boolean
   averageRating?: number | null
   wellTheme?: string | null
+  isOwner?: boolean
+  ratedCount?: number
   coins?: Array<{
     id: string
     sentenceStarter: string
@@ -101,12 +103,16 @@ export function Well({
   isActive,
   averageRating,
   wellTheme,
+  isOwner = false,
+  ratedCount = 0,
   coins = [],
   onFishCoin,
   showFishButton = false,
 }: WellProps) {
   const [isFishing, setIsFishing] = useState(false)
-  const progress = (wishCount / wishLimit) * 100
+  // For owner: show rated progress. For visitor: show received progress
+  const displayCount = isOwner ? ratedCount : wishCount
+  const progress = (displayCount / wishLimit) * 100
   const theme = getWellThemeById(wellTheme)
 
   const handleFish = () => {
@@ -192,8 +198,17 @@ export function Well({
         {/* Progress indicator */}
         <div className="mt-6 w-full max-w-xs mx-auto">
           <div className="flex justify-between text-sm text-stone-600 mb-1">
-            <span>{wishCount} coins collected</span>
-            <span>{wishLimit} needed</span>
+            {isOwner ? (
+              <>
+                <span>{ratedCount} wishes opened</span>
+                <span>{wishLimit} total</span>
+              </>
+            ) : (
+              <>
+                <span>{wishCount}/{wishLimit} wishes</span>
+                <span>{wishCount >= wishLimit ? 'Full!' : `${wishLimit - wishCount} spots left`}</span>
+              </>
+            )}
           </div>
           <div className="w-full h-3 bg-stone-200 rounded-full overflow-hidden">
             <motion.div

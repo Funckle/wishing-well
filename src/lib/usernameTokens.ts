@@ -154,3 +154,14 @@ export function getTotalCombinations(): number {
     return total + theme.adjectives.length * theme.nouns.length
   }, 0)
 }
+
+// Generate a completely random username from any theme
+export function generateRandomUsernameAnyTheme(): { name: string; themeId: string } {
+  const randomTheme = USERNAME_THEMES[Math.floor(Math.random() * USERNAME_THEMES.length)]
+  const adjective = randomTheme.adjectives[Math.floor(Math.random() * randomTheme.adjectives.length)]
+  const noun = randomTheme.nouns[Math.floor(Math.random() * randomTheme.nouns.length)]
+  return {
+    name: `${adjective} ${noun}`,
+    themeId: randomTheme.id
+  }
+}

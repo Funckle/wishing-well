@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   USERNAME_THEMES,
   generateRandomUsername,
-  getThemeCombinations,
+  generateRandomUsernameAnyTheme,
 } from '@/lib/usernameTokens'
 
 interface UsernameGeneratorProps {
@@ -29,11 +29,16 @@ export function UsernameGenerator({
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Generate a new name when theme changes or refresh is clicked
-  const generateNew = () => {
-    if (!selectedTheme) return
-    const name = generateRandomUsername(selectedTheme)
-    setGeneratedName(name)
+  // Generate a new name - from selected theme or random
+  const generateNew = (fromAnyTheme = false) => {
+    if (fromAnyTheme || !selectedTheme) {
+      const { name, themeId } = generateRandomUsernameAnyTheme()
+      setGeneratedName(name)
+      setSelectedTheme(themeId)
+    } else {
+      const name = generateRandomUsername(selectedTheme)
+      setGeneratedName(name)
+    }
     setIsAvailable(null)
     setError(null)
   }
@@ -48,18 +53,15 @@ export function UsernameGenerator({
         .from('profiles')
         .select('id')
         .eq('username', name)
-        .limit(1)
-        .single()
+        .maybeSingle()
 
-      if (queryError && queryError.code === 'PGRST116') {
-        // No rows found - name is available
-        setIsAvailable(true)
-      } else if (data) {
-        // Name is taken
-        setIsAvailable(false)
-      } else {
-        setIsAvailable(true)
+      if (queryError) {
+        setError('Failed to check availability')
+        return
       }
+
+      // If data is null, no one has this name - it's available
+      setIsAvailable(data === null)
     } catch {
       setError('Failed to check availability')
     } finally {
@@ -122,10 +124,54 @@ export function UsernameGenerator({
           </p>
         )}
 
+        {/* Name Generator - Always visible */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl p-4 border border-amber-100">
+            {generatedName ? (
+              <div className="text-center">
+                <motion.p
+                  key={generatedName}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-2xl font-bold text-stone-800 mb-2"
+                >
+                  {generatedName}
+                </motion.p>
+
+                {isChecking ? (
+                  <p className="text-sm text-stone-500">Checking availability...</p>
+                ) : isAvailable === true ? (
+                  <p className="text-sm text-green-600 font-medium">
+                    ✓ This name is available!
+                  </p>
+                ) : isAvailable === false ? (
+                  <p className="text-sm text-red-500 font-medium">
+                    ✗ This name is taken
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-center text-stone-500">
+                Generate a random name or pick a theme below
+              </p>
+            )}
+          </div>
+
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="secondary"
+              onClick={() => generateNew(true)}
+              icon="🎲"
+            >
+              {generatedName ? 'Try Another' : 'Generate Name'}
+            </Button>
+          </div>
+        </div>
+
         {/* Theme Selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-stone-700 mb-3">
-            Pick a theme
+            Or pick a theme
           </label>
           <div className="grid grid-cols-2 gap-2">
             {USERNAME_THEMES.map((theme) => (
@@ -134,7 +180,8 @@ export function UsernameGenerator({
                 type="button"
                 onClick={() => {
                   setSelectedTheme(theme.id)
-                  setGeneratedName(null)
+                  const name = generateRandomUsername(theme.id)
+                  setGeneratedName(name)
                   setIsAvailable(null)
                 }}
                 className={`p-3 rounded-xl text-left transition-all ${
@@ -145,72 +192,10 @@ export function UsernameGenerator({
               >
                 <span className="text-lg mr-2">{theme.emoji}</span>
                 <span className="font-medium">{theme.label}</span>
-                <p className={`text-xs mt-1 ${
-                  selectedTheme === theme.id ? 'text-white/80' : 'text-stone-500'
-                }`}>
-                  {getThemeCombinations(theme.id).toLocaleString()} names
-                </p>
               </button>
             ))}
           </div>
         </div>
-
-        {/* Name Generator */}
-        <AnimatePresence mode="wait">
-          {selectedTheme && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6"
-            >
-              <label className="block text-sm font-medium text-stone-700 mb-3">
-                Your generated name
-              </label>
-
-              <div className="bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl p-4 border border-amber-100">
-                {generatedName ? (
-                  <div className="text-center">
-                    <motion.p
-                      key={generatedName}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-2xl font-bold text-stone-800 mb-2"
-                    >
-                      {generatedName}
-                    </motion.p>
-
-                    {isChecking ? (
-                      <p className="text-sm text-stone-500">Checking availability...</p>
-                    ) : isAvailable === true ? (
-                      <p className="text-sm text-green-600 font-medium">
-                        ✓ This name is available!
-                      </p>
-                    ) : isAvailable === false ? (
-                      <p className="text-sm text-red-500 font-medium">
-                        ✗ This name is taken
-                      </p>
-                    ) : null}
-                  </div>
-                ) : (
-                  <p className="text-center text-stone-500">
-                    Click the button below to generate a name
-                  </p>
-                )}
-              </div>
-
-              <div className="flex justify-center mt-4">
-                <Button
-                  variant="secondary"
-                  onClick={generateNew}
-                  icon="🎲"
-                >
-                  {generatedName ? 'Try Another' : 'Generate Name'}
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Error Message */}
         <AnimatePresence>

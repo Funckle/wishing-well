@@ -104,7 +104,6 @@ const youAreOutcomes: Token[] = [
   { id: 'believe-it', label: '— believe it' },
   { id: 'we-see-it', label: 'and we see it' },
   { id: 'keep-going', label: '— keep going' },
-  { id: 'none', label: '' },
 ]
 
 // Group 2: "Keep/Never stop" starters (need -ing verbs)
@@ -128,7 +127,6 @@ const keepOutcomes: Token[] = [
   { id: 'cheering', label: "— we're cheering for you" },
   { id: 'proud', label: "— we're proud of you" },
   { id: 'matters', label: '— it matters' },
-  { id: 'none', label: '' },
 ]
 
 // Group 3: "Remember/Never forget" starters (need clauses)
@@ -150,7 +148,6 @@ const rememberDescriptors: Token[] = [
 const rememberOutcomes: Token[] = [
   { id: 'always', label: '— always' },
   { id: 'truly', label: '— truly' },
-  { id: 'none', label: '' },
 ]
 
 // Group 4: "I hope/Wishing you" starters (need nouns/states)
@@ -174,7 +171,6 @@ const wishingOutcomes: Token[] = [
   { id: 'today', label: 'today' },
   { id: 'always', label: 'always' },
   { id: 'when-needed', label: 'when you need it most' },
-  { id: 'none', label: '' },
 ]
 
 // Group 5: Direct encouragement (standalone phrases)
@@ -197,7 +193,6 @@ const directOutcomes: Token[] = [
   { id: 'seriously', label: '— seriously' },
   { id: 'always', label: '— always' },
   { id: 'promise', label: '— I promise' },
-  { id: 'none', label: '' },
 ]
 
 export const TOKEN_GROUPS: TokenGroup[] = [

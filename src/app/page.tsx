@@ -285,6 +285,7 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             <Link href="/explore" className="hover:text-stone-700 transition">Explore</Link>
             <Link href="/leaderboard" className="hover:text-stone-700 transition">Leaderboard</Link>
+            <Link href="/how-it-works" className="hover:text-stone-700 transition">How It Works</Link>
           </div>
           <p className="text-stone-400">Spreading kindness, one coin at a time.</p>
         </div>

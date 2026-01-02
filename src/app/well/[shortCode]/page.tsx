@@ -150,7 +150,7 @@ export default function WellPage({ params }: { params: PageParams }) {
       })
       .eq('id', currentWish.id)
 
-    // Add points to sender if they're registered
+    // Add points to sender if they're registered and rating > 0
     if (currentWish.sender_id && rating > 0) {
       await supabase.rpc('add_points', {
         user_id: currentWish.sender_id,
@@ -158,8 +158,10 @@ export default function WellPage({ params }: { params: PageParams }) {
       })
     }
 
-    // Update well average rating
-    await supabase.rpc('update_well_rating', { well_id: well.id })
+    // Update well average rating (only for ratings > 0)
+    if (rating > 0) {
+      await supabase.rpc('update_well_rating', { well_id: well.id })
+    }
 
     // Update local state
     setWishes((prev) =>
@@ -171,11 +173,35 @@ export default function WellPage({ params }: { params: PageParams }) {
     setShowRating(false)
     setCurrentWish(null)
 
-    // Check if well is complete
-    const allRated = wishes.every((w) => w.id === currentWish.id || w.rating !== null)
-    if (allRated && wishes.length >= well.wish_limit) {
+    // Check if well is complete (all wishes rated with 1+ stars, excluding skipped)
+    const ratedWishes = wishes.filter((w) => w.id === currentWish.id ? rating > 0 : (w.rating !== null && w.rating > 0))
+    if (ratedWishes.length >= well.wish_limit) {
       setShowConfetti(true)
     }
+  }
+
+  const handleSkip = async () => {
+    if (!currentWish || !well) return
+
+    // Mark wish as skipped (rating: 0, no points, doesn't count)
+    await supabase
+      .from('wishes')
+      .update({
+        rating: 0,
+        is_viewed: true,
+        rated_at: new Date().toISOString(),
+      })
+      .eq('id', currentWish.id)
+
+    // Update local state
+    setWishes((prev) =>
+      prev.map((w) =>
+        w.id === currentWish.id ? { ...w, rating: 0, is_viewed: true } : w
+      )
+    )
+
+    setShowRating(false)
+    setCurrentWish(null)
   }
 
   if (isLoading) {
@@ -200,6 +226,8 @@ export default function WellPage({ params }: { params: PageParams }) {
   }
 
   const unviewedCount = wishes.filter((w) => !w.is_viewed).length
+  // Count only wishes rated 1+ (not skipped with rating 0)
+  const ratedCount = wishes.filter((w) => w.rating !== null && w.rating > 0).length
   const backgroundTheme = getBackgroundThemeById(well.background_theme)
 
   const pageContent = (
@@ -216,6 +244,8 @@ export default function WellPage({ params }: { params: PageParams }) {
           isActive={well.is_active}
           averageRating={well.average_rating}
           wellTheme={well.well_theme}
+          isOwner={isOwner}
+          ratedCount={ratedCount}
           coins={wishes.map((w) => ({
             id: w.id,
             sentenceStarter: w.sentence_starter,
@@ -262,13 +292,13 @@ export default function WellPage({ params }: { params: PageParams }) {
           </div>
         )}
 
-        {/* Owner view - list of rated wishes */}
-        {isOwner && wishes.filter((w) => w.rating !== null).length > 0 && (
+        {/* Owner view - list of good wishes (3+ stars only) */}
+        {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
           <div className="mt-12">
             <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
             <div className="space-y-4">
               {wishes
-                .filter((wish) => wish.rating !== null)
+                .filter((wish) => wish.rating !== null && wish.rating >= 3)
                 .map((wish) => (
                   <motion.div
                     key={wish.id}
@@ -345,22 +375,22 @@ export default function WellPage({ params }: { params: PageParams }) {
       <AnimatePresence>
         {showRating && currentWish && (
           <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl my-8"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
               <h2 className="text-xl font-semibold text-center text-stone-800 mb-4">
-                Rate this wish
+                How does this wish make you feel?
               </h2>
 
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-4">
                 <Coin
                   wish={{
                     sentenceStarter: currentWish.sentence_starter,
@@ -378,7 +408,7 @@ export default function WellPage({ params }: { params: PageParams }) {
               <div className="bg-stone-50 rounded-xl p-4 mb-6">
                 <p className="text-center text-stone-700">
                   {currentWish.custom_text ||
-                    `${currentWish.sentence_starter} ${currentWish.descriptors.join(' + ')} ${currentWish.outcome}`}
+                    `${currentWish.sentence_starter} ${currentWish.descriptors.join(' + ')} ${currentWish.outcome}`.trim()}
                 </p>
                 {currentWish.emojis.length > 0 && (
                   <p className="text-center text-lg mt-2">
@@ -387,20 +417,31 @@ export default function WellPage({ params }: { params: PageParams }) {
                 )}
               </div>
 
-              <div className="flex justify-center mb-6">
-                <StarRating value={null} onChange={handleRate} size="lg" />
+              {/* Rating section with explanation */}
+              <div className="mb-6">
+                <div className="flex justify-center mb-3">
+                  <StarRating value={null} onChange={handleRate} size="lg" />
+                </div>
+                <p className="text-center text-xs text-stone-500">
+                  <span className="font-medium">3-5 stars:</span> Saves to your collection
+                  <br />
+                  <span className="font-medium">1-2 stars:</span> Counts but won&apos;t be saved
+                </p>
               </div>
 
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  setShowRating(false)
-                  setCurrentWish(null)
-                }}
-              >
-                Skip for now
-              </Button>
+              {/* Skip button with explanation */}
+              <div className="border-t border-stone-100 pt-4">
+                <Button
+                  variant="ghost"
+                  className="w-full text-stone-500"
+                  onClick={handleSkip}
+                >
+                  Skip this wish
+                </Button>
+                <p className="text-center text-xs text-stone-400 mt-2">
+                  Removes the wish entirely — it won&apos;t count or be saved
+                </p>
+              </div>
             </motion.div>
           </motion.div>
         )}

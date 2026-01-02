@@ -107,11 +107,11 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
         return
       }
 
-      // Create wish
+      // Create wish - for direct type, don't include "Say it directly" as the starter
       const { error: insertError } = await supabase.from('wishes').insert({
         well_id: wellId,
         sender_id: user?.id || null,
-        sentence_starter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+        sentence_starter: isDirectType ? '' : getTokenLabel(SENTENCE_STARTERS, currentStarterId),
         descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
         outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
         emojis: emojiLabels,
@@ -184,7 +184,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
         {showToss && (
           <CoinTossAnimation
             wish={{
-              sentenceStarter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+              sentenceStarter: isDirectType ? '' : getTokenLabel(SENTENCE_STARTERS, currentStarterId),
               descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
               outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
               emojis: emojiLabels,
@@ -322,7 +322,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
             <div className="flex justify-center">
               <Coin
                 wish={{
-                  sentenceStarter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+                  sentenceStarter: isDirectType ? '' : getTokenLabel(SENTENCE_STARTERS, currentStarterId),
                   descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
                   outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
                   emojis: emojiLabels,
