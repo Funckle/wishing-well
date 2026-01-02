@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useStore } from '@/store/useStore'
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
 import type { Profile } from '@/types/database'
 
 interface AuthContextType {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session)
         setLocalUser(session?.user ?? null)
 
