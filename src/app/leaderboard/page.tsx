@@ -19,18 +19,25 @@ export default function LeaderboardPage() {
   const supabase = createClient()
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchLeaderboard() {
-      const { data, error } = await supabase
-        .from('leaderboard')
-        .select('*')
-        .limit(100)
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('leaderboard')
+          .select('*')
+          .limit(100)
 
-      if (!error && data) {
-        setEntries(data)
+        if (fetchError) throw fetchError
+        setEntries(data || [])
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch leaderboard:', err)
+        setError('Failed to load leaderboard. Please try again.')
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     fetchLeaderboard()
@@ -78,6 +85,17 @@ export default function LeaderboardPage() {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
+            <div className="text-6xl mb-4">😔</div>
+            <h2 className="text-xl font-semibold text-stone-800 mb-2">
+              Something went wrong
+            </h2>
+            <p className="text-stone-500 mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
           </div>
         ) : entries.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-3xl shadow-lg">

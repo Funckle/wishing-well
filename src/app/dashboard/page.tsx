@@ -20,6 +20,7 @@ export default function DashboardPage() {
 
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
   const [showUsernameGenerator, setShowUsernameGenerator] = useState(false)
 
@@ -35,16 +36,22 @@ export default function DashboardPage() {
   }, [user, authLoading, router])
 
   async function fetchWells() {
-    const { data, error } = await supabase
-      .from('wells')
-      .select('*')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('wells')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
 
-    if (!error && data) {
-      setWells(data)
+      if (fetchError) throw fetchError
+      setWells(data || [])
+      setError(null)
+    } catch (err) {
+      console.error('Failed to fetch wells:', err)
+      setError('Failed to load your wells. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   const copyToClipboard = (text: string) => {
@@ -56,6 +63,26 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
       </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen pt-20 pb-8 px-4">
+        <Nav />
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
+            <div className="text-6xl mb-4">😔</div>
+            <h2 className="text-xl font-semibold text-stone-800 mb-2">
+              Something went wrong
+            </h2>
+            <p className="text-stone-500 mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </main>
     )
   }
 

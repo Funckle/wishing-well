@@ -15,38 +15,45 @@ export default function ExplorePage() {
   const { user } = useAuth()
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [sentWellIds, setSentWellIds] = useState<string[]>([])
 
   useEffect(() => {
     async function fetchData() {
-      // Get sent well IDs
-      if (user) {
-        // Logged-in user - get from database
-        const { data: sentWishes } = await supabase
-          .from('wishes')
-          .select('well_id')
-          .eq('sender_id', user.id)
+      try {
+        // Get sent well IDs
+        if (user) {
+          // Logged-in user - get from database
+          const { data: sentWishes } = await supabase
+            .from('wishes')
+            .select('well_id')
+            .eq('sender_id', user.id)
 
-        if (sentWishes) {
-          setSentWellIds(sentWishes.map((w) => w.well_id))
+          if (sentWishes) {
+            setSentWellIds(sentWishes.map((w) => w.well_id))
+          }
+        } else {
+          // Anonymous user - get from localStorage
+          setSentWellIds(getSentWellIds())
         }
-      } else {
-        // Anonymous user - get from localStorage
-        setSentWellIds(getSentWellIds())
-      }
 
-      // Fetch active wells
-      const { data, error } = await supabase
-        .from('wells')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(50)
+        // Fetch active wells
+        const { data, error: fetchError } = await supabase
+          .from('wells')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(50)
 
-      if (!error && data) {
-        setWells(data)
+        if (fetchError) throw fetchError
+        setWells(data || [])
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch wells:', err)
+        setError('Failed to load wells. Please try again.')
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     fetchData()
