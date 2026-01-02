@@ -1,15 +1,184 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { useAuth } from '@/components/auth/AuthProvider'
 
+// Example wishes to display on floating coins
+const EXAMPLE_WISHES = [
+  { text: 'You are brave and capable', emojis: ['💪', '✨'], rating: 5 },
+  { text: 'Keep going — you\'ve got this', emojis: ['🔥'], rating: 4 },
+  { text: 'Remember: you matter — always', emojis: ['❤️'], rating: 5 },
+  { text: 'Sending you strength and courage', emojis: ['🌟'], rating: 5 },
+  { text: 'You are not alone in this', emojis: ['💕'], rating: 4 },
+  { text: 'Never stop believing in yourself', emojis: ['⭐', '💪'], rating: 5 },
+  { text: 'Wishing you peace and clarity', emojis: ['🌈'], rating: 4 },
+  { text: 'You inspire me — seriously', emojis: ['✨'], rating: 5 },
+  { text: 'Keep shining — we see it', emojis: ['☀️'], rating: 4 },
+]
+
+// Positions around the well for floating coins
+const COIN_POSITIONS = [
+  { x: -140, y: -80 },   // top left
+  { x: 140, y: -60 },    // top right
+  { x: -160, y: 60 },    // mid left
+  { x: 160, y: 80 },     // mid right
+  { x: -120, y: 180 },   // bottom left
+  { x: 130, y: 160 },    // bottom right
+  { x: 0, y: -120 },     // top center
+  { x: -180, y: 0 },     // far left
+  { x: 180, y: 20 },     // far right
+]
+
+// SVG Coin for floating wishes
+function FloatingCoin({
+  wish,
+  position,
+  delay
+}: {
+  wish: typeof EXAMPLE_WISHES[0]
+  position: { x: number; y: number }
+  delay: number
+}) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        left: '50%',
+        top: '50%',
+        x: position.x,
+        y: position.y,
+      }}
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{
+        opacity: [0, 1, 1, 0],
+        scale: [0.5, 1, 1, 0.8],
+        y: [position.y, position.y - 10, position.y - 10, position.y - 20],
+      }}
+      transition={{
+        duration: 6,
+        delay,
+        repeat: Infinity,
+        repeatDelay: 12, // Wait for other coins to show
+        ease: 'easeInOut',
+      }}
+    >
+      <div className="relative -translate-x-1/2 -translate-y-1/2">
+        {/* Coin SVG */}
+        <svg
+          viewBox="0 0 36 36"
+          className="w-24 h-24 md:w-28 md:h-28 drop-shadow-lg"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle fill="#D97706" cx="18" cy="19" r="17" />
+          <circle fill="#FBBF24" cx="18" cy="17" r="17" />
+          <circle fill="#FCD34D" cx="18" cy="17" r="14" />
+          <circle fill="none" stroke="#D97706" strokeWidth="0.5" cx="18" cy="17" r="13" />
+          <circle fill="none" stroke="#FDE68A" strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
+        </svg>
+
+        {/* Wish text overlay */}
+        <div className="absolute inset-0 flex items-center justify-center p-3">
+          <div className="text-center">
+            <p className="text-[9px] md:text-[10px] text-amber-900 font-medium leading-tight">
+              {wish.text}
+            </p>
+            <p className="text-xs mt-0.5">{wish.emojis.join(' ')}</p>
+          </div>
+        </div>
+
+        {/* Star rating */}
+        {wish.rating && (
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <span
+                key={i}
+                className={`text-[8px] ${i < wish.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+// Well SVG for the landing page
+function HeroWellSVG({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Grass/ground base */}
+      <path fill="#BCC987" d="M84.081,167.302c-4.662,0-8.44,3.779-8.44,8.44v42.481H64.974c-4.662,0-8.44,3.779-8.44,8.44s3.778,8.44,8.44,8.44h19.107c4.662,0,8.44-3.779,8.44-8.44v-42.481h297.187v-16.879H84.081z"/>
+
+      {/* Roof poles - yellow */}
+      <polygon fill="#FEC45E" points="405.357,100.318 405.357,145.329 391.905,167.835 378.452,145.329 378.452,100.318"/>
+      <polygon fill="#FEC45E" points="161.094,100.318 161.094,145.329 147.647,167.835 134.2,145.329 134.2,100.318"/>
+
+      {/* Support beams */}
+      <rect x="378.452" y="145.329" fill="#FCDB5A" width="26.905" height="162.107"/>
+      <rect x="134.2" y="145.329" fill="#FCDB5A" width="26.894" height="162.107"/>
+
+      {/* Rope/handle */}
+      <path fill="#4D3D36" d="M320.41,327.124c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v154.394C328.85,323.345,325.072,327.124,320.41,327.124z"/>
+
+      {/* Roof - orange/red */}
+      <polygon fill="#D35B38" points="429.157,0 455.466,111.571 421.707,111.571 364.466,55.785 395.398,0"/>
+      <polygon fill="#E86F22" points="395.398,0 421.707,111.571 84.08,111.571 110.389,0"/>
+
+      {/* Roof decorations */}
+      <path fill="#D35B38" d="M276.852,61.411c-13.96,0-25.319-11.357-25.319-25.319c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44c0,4.654,3.785,8.44,8.44,8.44c4.654,0,8.44-3.785,8.44-8.44c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44C302.171,50.052,290.812,61.411,276.852,61.411z"/>
+      <path fill="#D35B38" d="M355.621,83.916c-13.96,0-25.319-11.357-25.319-25.319c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44c0,4.654,3.785,8.44,8.44,8.44s8.44-3.785,8.44-8.44c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44C380.94,72.558,369.581,83.916,355.621,83.916z"/>
+
+      {/* Well base - stone */}
+      <polygon fill="#FEC45E" points="131.949,340.362 131.949,385.373 373.849,512 407.608,512 407.608,340.362"/>
+      <rect x="131.949" y="385.373" fill="#FCDB5A" width="241.9" height="126.627"/>
+
+      {/* Well rim */}
+      <polygon fill="#9CAC74" points="419.266,296.184 419.266,351.615 385.507,351.615 363.002,323.899 385.507,296.184"/>
+      <rect x="120.28" y="296.184" fill="#BCC987" width="265.227" height="55.431"/>
+
+      {/* Handle details */}
+      <path fill="#4D3D36" d="M269.773,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44v22.904C278.212,191.855,274.435,195.634,269.773,195.634z"/>
+      <path fill="#4D3D36" d="M295.091,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44v22.904C303.531,191.855,299.754,195.634,295.091,195.634z"/>
+      <path fill="#4D3D36" d="M244.454,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v22.904C252.894,191.855,249.116,195.634,244.454,195.634z"/>
+      <path fill="#4D3D36" d="M219.135,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v22.904C227.575,191.855,223.797,195.634,219.135,195.634z"/>
+
+      {/* Coins in well */}
+      <circle fill="#FEC45E" cx="200" cy="465" r="12"/>
+      <circle fill="#FEC45E" cx="327" cy="445" r="12"/>
+      <circle fill="#FEC45E" cx="178" cy="440" r="12"/>
+      <circle fill="#FBBF24" cx="250" cy="470" r="10"/>
+      <circle fill="#FBBF24" cx="300" cy="475" r="10"/>
+      <circle fill="#FCD34D" cx="225" cy="455" r="8"/>
+    </svg>
+  )
+}
+
 export default function HomePage() {
   const { user } = useAuth()
+  const [visibleCoins, setVisibleCoins] = useState<number[]>([0, 1, 2])
+
+  // Rotate which 3 coins are visible every 6 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleCoins(prev => {
+        const next = prev.map(i => (i + 3) % 9)
+        return next
+      })
+    }, 6000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-rose-50">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -18,10 +187,10 @@ export default function HomePage() {
             <span className="font-bold text-xl text-stone-800">Wishing Well</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/explore" className="text-stone-600 hover:text-stone-900 transition">
-              Explore Wells
+            <Link href="/explore" className="text-stone-600 hover:text-stone-900 transition hidden sm:block">
+              Explore
             </Link>
-            <Link href="/leaderboard" className="text-stone-600 hover:text-stone-900 transition">
+            <Link href="/leaderboard" className="text-stone-600 hover:text-stone-900 transition hidden sm:block">
               Leaderboard
             </Link>
             {user ? (
@@ -37,249 +206,113 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl md:text-6xl font-bold text-stone-800 mb-6 leading-tight">
-              Receive wishes when you need them most
-            </h1>
-            <p className="text-xl text-stone-600 mb-10 max-w-2xl mx-auto">
-              Open a wishing well during tough moments and receive thoughtful,
-              coin-engraved wishes from kind strangers around the world.
-            </p>
-          </motion.div>
+      {/* Single Hero Section */}
+      <section className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12">
+        {/* Tagline */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-3">
+            Toss a coin. Spread kindness.
+          </h1>
+          <p className="text-lg text-stone-600 max-w-md mx-auto">
+            Send heartfelt wishes to people who need them most
+          </p>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Link href="/create">
-              <Button size="lg" icon="✨">
-                Open a Wishing Well
-              </Button>
-            </Link>
-            <Link href="/explore">
-              <Button size="lg" variant="secondary" icon="🪙">
-                Send a Wish
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* Animated Well Illustration */}
+        {/* Well with floating coins */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mt-16 max-w-md mx-auto"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative w-full max-w-lg mx-auto mb-10"
         >
-          <div className="relative">
-            {/* Well structure */}
-            <div className="w-64 h-64 mx-auto relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-stone-400 to-stone-600 shadow-2xl" />
-              <div className="absolute inset-4 rounded-full bg-gradient-to-b from-blue-900 to-slate-900 overflow-hidden">
-                {/* Animated sparkles */}
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute text-lg"
-                    style={{
-                      left: `${20 + i * 12}%`,
-                      top: `${25 + (i % 3) * 25}%`,
-                    }}
-                    animate={{
-                      opacity: [0.4, 1, 0.4],
-                      scale: [0.8, 1.2, 0.8],
-                    }}
-                    transition={{
-                      duration: 2,
-                      delay: i * 0.3,
-                      repeat: Infinity,
-                    }}
-                  >
-                    ✨
-                  </motion.div>
-                ))}
+          {/* The well SVG */}
+          <div className="relative mx-auto w-56 h-56 md:w-72 md:h-72">
+            <HeroWellSVG className="w-full h-full drop-shadow-xl" />
 
-                {/* Coins at bottom */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-300 to-amber-500"
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 0.7, y: 0 }}
-                      transition={{ delay: 1 + i * 0.2 }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Sparkle effects on well */}
+            {[...Array(4)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute text-xl pointer-events-none"
+                style={{
+                  left: `${35 + i * 10}%`,
+                  top: `${70 + (i % 2) * 8}%`,
+                }}
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.8, 1.3, 0.8],
+                }}
+                transition={{
+                  duration: 2,
+                  delay: i * 0.4,
+                  repeat: Infinity,
+                }}
+              >
+                ✨
+              </motion.div>
+            ))}
           </div>
+
+          {/* Floating coins around the well */}
+          <AnimatePresence mode="sync">
+            {visibleCoins.map((coinIndex, i) => (
+              <FloatingCoin
+                key={`${coinIndex}-${Math.floor(Date.now() / 6000)}`}
+                wish={EXAMPLE_WISHES[coinIndex]}
+                position={COIN_POSITIONS[coinIndex]}
+                delay={i * 0.3}
+              />
+            ))}
+          </AnimatePresence>
         </motion.div>
+
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Link href="/create">
+            <Button size="lg" icon="✨">
+              Open a Wishing Well
+            </Button>
+          </Link>
+          <Link href="/explore">
+            <Button size="lg" variant="secondary" icon="🪙">
+              Send a Wish
+            </Button>
+          </Link>
+        </motion.div>
+
+        {/* Subtle hint */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="text-sm text-stone-400 mt-8 text-center"
+        >
+          No account needed to send wishes
+        </motion.p>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 px-4 bg-white/50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-stone-800 mb-16">
-            How It Works
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* For Well Openers */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-3xl p-8 shadow-lg border border-stone-100"
-            >
-              <div className="text-4xl mb-4">🌟</div>
-              <h3 className="text-xl font-semibold text-stone-800 mb-3">
-                1. Open a Well
-              </h3>
-              <p className="text-stone-600">
-                Share what you need encouragement for. Get a unique link to share
-                with friends, family, or the world.
-              </p>
-            </motion.div>
-
-            {/* For Wish Senders */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl p-8 shadow-lg border border-stone-100"
-            >
-              <div className="text-4xl mb-4">🪙</div>
-              <h3 className="text-xl font-semibold text-stone-800 mb-3">
-                2. Send Wishes
-              </h3>
-              <p className="text-stone-600">
-                Compose heartfelt wishes using our token system. Your wish gets
-                engraved on a golden coin and tossed into the well.
-              </p>
-            </motion.div>
-
-            {/* Collecting */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-3xl p-8 shadow-lg border border-stone-100"
-            >
-              <div className="text-4xl mb-4">🎣</div>
-              <h3 className="text-xl font-semibold text-stone-800 mb-3">
-                3. Collect & Rate
-              </h3>
-              <p className="text-stone-600">
-                Fish out coins one by one. Each reveals a unique wish. Rate them
-                to reward kind wishers with points.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl font-bold text-stone-800 mb-6">
-                Earn points, unlock rewards
-              </h2>
-              <p className="text-stone-600 mb-6">
-                Send quality wishes that get high ratings and climb the leaderboard.
-                Unlock GIFs at 50 points, custom messages at 100 points, and special
-                cosmetics along the way.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-3 text-stone-700">
-                  <span className="text-amber-500">⭐</span>
-                  Rate wishes 0-5 stars
-                </li>
-                <li className="flex items-center gap-3 text-stone-700">
-                  <span className="text-amber-500">🏆</span>
-                  Public leaderboard
-                </li>
-                <li className="flex items-center gap-3 text-stone-700">
-                  <span className="text-amber-500">🎁</span>
-                  Unlock GIFs and custom wishes
-                </li>
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-3xl p-8"
-            >
-              <div className="text-center">
-                <div className="text-6xl mb-4">🏅</div>
-                <h3 className="text-2xl font-bold text-stone-800 mb-2">
-                  Top Wishers
-                </h3>
-                <p className="text-stone-600 mb-6">
-                  Join the kindness leaderboard
-                </p>
-                <Link href="/leaderboard">
-                  <Button variant="secondary">View Leaderboard</Button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-r from-rose-100 to-pink-100">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-stone-800 mb-6">
-            Ready to spread some kindness?
-          </h2>
-          <p className="text-stone-600 mb-8">
-            No account required to send wishes. Sign up to open wells and track your impact.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/explore">
-              <Button size="lg" variant="secondary">
-                Browse Active Wells
-              </Button>
-            </Link>
-            <Link href="/create">
-              <Button size="lg">
-                Create Your Well
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 bg-stone-800 text-stone-400">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Minimal Footer */}
+      <footer className="py-6 px-4 border-t border-stone-100">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-stone-500">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🌟</span>
-            <span className="font-semibold text-white">Wishing Well</span>
+            <span>🌟</span>
+            <span className="font-medium text-stone-700">Wishing Well</span>
           </div>
-          <p className="text-sm">
-            Spreading kindness, one coin at a time.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/explore" className="hover:text-stone-700 transition">Explore</Link>
+            <Link href="/leaderboard" className="hover:text-stone-700 transition">Leaderboard</Link>
+          </div>
+          <p className="text-stone-400">Spreading kindness, one coin at a time.</p>
         </div>
       </footer>
     </main>

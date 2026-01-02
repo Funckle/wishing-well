@@ -26,6 +26,72 @@ interface WellProps {
   showFishButton?: boolean
 }
 
+// Well SVG component based on SVG Repo well
+function WellSVG({ className = '', coinCount = 0 }: { className?: string; coinCount?: number }) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Grass/ground base */}
+      <path fill="#BCC987" d="M84.081,167.302c-4.662,0-8.44,3.779-8.44,8.44v42.481H64.974c-4.662,0-8.44,3.779-8.44,8.44s3.778,8.44,8.44,8.44h19.107c4.662,0,8.44-3.779,8.44-8.44v-42.481h297.187v-16.879H84.081z"/>
+
+      {/* Roof poles - yellow */}
+      <polygon fill="#FEC45E" points="405.357,100.318 405.357,145.329 391.905,167.835 378.452,145.329 378.452,100.318"/>
+      <polygon fill="#FEC45E" points="161.094,100.318 161.094,145.329 147.647,167.835 134.2,145.329 134.2,100.318"/>
+
+      {/* Support beams */}
+      <rect x="378.452" y="145.329" fill="#FCDB5A" width="26.905" height="162.107"/>
+      <rect x="134.2" y="145.329" fill="#FCDB5A" width="26.894" height="162.107"/>
+
+      {/* Rope/handle */}
+      <path fill="#4D3D36" d="M320.41,327.124c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v154.394C328.85,323.345,325.072,327.124,320.41,327.124z"/>
+
+      {/* Roof - orange/red */}
+      <polygon fill="#D35B38" points="429.157,0 455.466,111.571 421.707,111.571 364.466,55.785 395.398,0"/>
+      <polygon fill="#E86F22" points="395.398,0 421.707,111.571 84.08,111.571 110.389,0"/>
+
+      {/* Roof decorations */}
+      <path fill="#D35B38" d="M276.852,61.411c-13.96,0-25.319-11.357-25.319-25.319c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44c0,4.654,3.785,8.44,8.44,8.44c4.654,0,8.44-3.785,8.44-8.44c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44C302.171,50.052,290.812,61.411,276.852,61.411z"/>
+      <path fill="#D35B38" d="M355.621,83.916c-13.96,0-25.319-11.357-25.319-25.319c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44c0,4.654,3.785,8.44,8.44,8.44s8.44-3.785,8.44-8.44c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44C380.94,72.558,369.581,83.916,355.621,83.916z"/>
+
+      {/* Well base - stone */}
+      <polygon fill="#FEC45E" points="131.949,340.362 131.949,385.373 373.849,512 407.608,512 407.608,340.362"/>
+      <rect x="131.949" y="385.373" fill="#FCDB5A" width="241.9" height="126.627"/>
+
+      {/* Well rim */}
+      <polygon fill="#9CAC74" points="419.266,296.184 419.266,351.615 385.507,351.615 363.002,323.899 385.507,296.184"/>
+      <rect x="120.28" y="296.184" fill="#BCC987" width="265.227" height="55.431"/>
+
+      {/* Handle details */}
+      <path fill="#4D3D36" d="M269.773,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44v22.904C278.212,191.855,274.435,195.634,269.773,195.634z"/>
+      <path fill="#4D3D36" d="M295.091,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44c4.662,0,8.44,3.779,8.44,8.44v22.904C303.531,191.855,299.754,195.634,295.091,195.634z"/>
+      <path fill="#4D3D36" d="M244.454,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v22.904C252.894,191.855,249.116,195.634,244.454,195.634z"/>
+      <path fill="#4D3D36" d="M219.135,195.634c-4.662,0-8.44-3.779-8.44-8.44V164.29c0-4.661,3.778-8.44,8.44-8.44s8.44,3.779,8.44,8.44v22.904C227.575,191.855,223.797,195.634,219.135,195.634z"/>
+
+      {/* Coins in well - dynamic based on count */}
+      {coinCount > 0 && <circle fill="#FEC45E" cx="200" cy="465" r="12"/>}
+      {coinCount > 1 && <circle fill="#FEC45E" cx="327" cy="445" r="12"/>}
+      {coinCount > 2 && <circle fill="#FEC45E" cx="178" cy="440" r="12"/>}
+      {coinCount > 3 && <circle fill="#FBBF24" cx="250" cy="470" r="10"/>}
+      {coinCount > 4 && <circle fill="#FBBF24" cx="300" cy="475" r="10"/>}
+      {coinCount > 5 && <circle fill="#FCD34D" cx="225" cy="455" r="8"/>}
+    </svg>
+  )
+}
+
+// Small coin SVG for the well interior
+function SmallCoinSVG({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 36 36" className={className} xmlns="http://www.w3.org/2000/svg">
+      <circle fill="#D97706" cx="18" cy="19" r="17" />
+      <circle fill="#FBBF24" cx="18" cy="17" r="17" />
+      <circle fill="#FCD34D" cx="18" cy="17" r="12" />
+    </svg>
+  )
+}
+
 export function Well({
   context,
   wishCount,
@@ -55,111 +121,64 @@ export function Well({
     <div className="relative w-full max-w-md mx-auto">
       {/* Well structure */}
       <div className="relative">
-        {/* Well opening (top view) */}
-        <div className="relative mx-auto w-64 h-64">
-          {/* Outer stone ring */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-stone-400 to-stone-600 shadow-2xl" />
+        {/* SVG Well illustration */}
+        <div className="relative mx-auto w-72 h-72">
+          <WellSVG className="w-full h-full drop-shadow-xl" coinCount={Math.min(wishCount, 6)} />
 
-          {/* Inner dark water area */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-b from-blue-900 to-slate-900 overflow-hidden">
-            {/* Water surface effect */}
+          {/* Sparkle effects overlay */}
+          {isActive && [...Array(4)].map((_, i) => (
             <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-blue-800/30 via-transparent to-blue-600/20"
+              key={i}
+              className="absolute text-lg pointer-events-none"
+              style={{
+                left: `${30 + i * 12}%`,
+                top: `${65 + (i % 2) * 10}%`,
+              }}
               animate={{
-                backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+                opacity: [0.4, 1, 0.4],
+                scale: [0.8, 1.2, 0.8],
               }}
               transition={{
-                duration: 8,
+                duration: 2,
+                delay: i * 0.5,
                 repeat: Infinity,
-                ease: 'linear',
               }}
-            />
+            >
+              ✨
+            </motion.div>
+          ))}
 
-            {/* Coins at bottom of well */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-1 max-w-[80%]">
-              {coins.slice(0, 12).map((coin, i) => (
-                <motion.div
-                  key={coin.id}
-                  initial={{ opacity: 0, y: -50 }}
-                  animate={{ opacity: 0.6, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow"
-                />
-              ))}
-              {wishCount > 12 && (
-                <span className="text-xs text-amber-300/70">+{wishCount - 12}</span>
-              )}
-            </div>
-
-            {/* Fishing animation */}
-            <AnimatePresence>
-              {isFishing && (
-                <motion.div
-                  className="absolute top-0 left-1/2 -translate-x-1/2"
-                  initial={{ y: -100 }}
-                  animate={{ y: [0, 80, 0] }}
-                  exit={{ y: -100 }}
-                  transition={{ duration: 1.5, ease: 'easeInOut' }}
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-0.5 h-20 bg-stone-400" />
-                    <motion.div
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 0.3, repeat: 3 }}
-                    >
-                      <Coin
-                        wish={{
-                          sentenceStarter: '',
-                          descriptors: [],
-                          outcome: '',
-                          emojis: ['✨'],
-                        }}
-                        size="sm"
-                      />
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Sparkle effects */}
-            {[...Array(5)].map((_, i) => (
+          {/* Fishing animation overlay */}
+          <AnimatePresence>
+            {isFishing && (
               <motion.div
-                key={i}
-                className="absolute text-xs"
-                style={{
-                  left: `${20 + i * 15}%`,
-                  top: `${30 + (i % 3) * 20}%`,
-                }}
-                animate={{
-                  opacity: [0.3, 1, 0.3],
-                  scale: [0.8, 1.2, 0.8],
-                }}
-                transition={{
-                  duration: 2,
-                  delay: i * 0.4,
-                  repeat: Infinity,
-                }}
+                className="absolute left-1/2 -translate-x-1/2"
+                style={{ top: '30%' }}
+                initial={{ y: -50 }}
+                animate={{ y: [0, 60, 0] }}
+                exit={{ y: -50 }}
+                transition={{ duration: 1.5, ease: 'easeInOut' }}
               >
-                ✨
+                <div className="flex flex-col items-center">
+                  <div className="w-0.5 h-16 bg-stone-600" />
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 0.3, repeat: 3 }}
+                  >
+                    <Coin
+                      wish={{
+                        sentenceStarter: '',
+                        descriptors: [],
+                        outcome: '',
+                        emojis: ['✨'],
+                      }}
+                      size="sm"
+                    />
+                  </motion.div>
+                </div>
               </motion.div>
-            ))}
-          </div>
-
-          {/* Stone texture details */}
-          <div className="absolute inset-0 rounded-full pointer-events-none">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-8 h-4 bg-stone-500 rounded-sm opacity-50"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(-115px)`,
-                }}
-              />
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Progress indicator */}

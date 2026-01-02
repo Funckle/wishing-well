@@ -9,10 +9,11 @@ import {
   Coin,
   CoinTossAnimation,
   SENTENCE_STARTERS,
-  DESCRIPTORS,
-  OUTCOMES,
   EMOJIS,
   getTokenLabel,
+  getDescriptorsForStarter,
+  getOutcomesForStarter,
+  getMaxDescriptorsForStarter,
 } from '@/components/ui'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
@@ -42,17 +43,48 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
   const canUseCustom = profile?.custom_wish_enabled ?? false
   const canUseGif = profile?.gif_enabled ?? false
 
-  const wishText = useCustom
-    ? customText
-    : `${getTokenLabel(SENTENCE_STARTERS, sentenceStarter[0] || '')} ${descriptors
-        .map((d) => getTokenLabel(DESCRIPTORS, d))
-        .join(' + ')} ${getTokenLabel(OUTCOMES, outcome[0] || '')}`.trim()
+  // Get dynamic descriptors/outcomes based on selected starter
+  const currentStarterId = sentenceStarter[0] || ''
+  const currentDescriptors = getDescriptorsForStarter(currentStarterId)
+  const currentOutcomes = getOutcomesForStarter(currentStarterId)
+  const maxDescriptors = getMaxDescriptorsForStarter(currentStarterId)
+  const isDirectType = currentStarterId === 'direct'
 
+  // Handle starter change - reset selections when starter changes
+  const handleStarterChange = (newStarter: string[]) => {
+    if (newStarter[0] !== sentenceStarter[0]) {
+      setDescriptors([])
+      setOutcome([])
+    }
+    setSentenceStarter(newStarter)
+  }
+
+  // Build wish text based on starter type
+  const buildWishText = () => {
+    if (useCustom) return customText
+
+    const starterLabel = getTokenLabel(SENTENCE_STARTERS, currentStarterId)
+    const descriptorLabels = descriptors.map((d) => getTokenLabel(currentDescriptors, d))
+    const outcomeLabel = getTokenLabel(currentOutcomes, outcome[0] || '')
+
+    if (isDirectType) {
+      // Direct type: descriptor IS the message, outcome is optional suffix
+      return `${descriptorLabels.join(' ')} ${outcomeLabel}`.trim()
+    }
+
+    // Build sentence: starter + descriptors + outcome
+    const starterText = starterLabel.replace('...', '').replace(':', '')
+    const descriptorText = descriptorLabels.join(' and ')
+
+    return `${starterText} ${descriptorText} ${outcomeLabel}`.trim()
+  }
+
+  const wishText = buildWishText()
   const emojiLabels = emojis.map((e) => getTokenLabel(EMOJIS, e))
 
   const isValid = useCustom
     ? customText.trim().length >= 5
-    : sentenceStarter.length > 0 && descriptors.length > 0 && outcome.length > 0
+    : sentenceStarter.length > 0 && descriptors.length > 0
 
   const handleSubmit = async () => {
     if (!isValid) return
@@ -75,9 +107,9 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
       const { error: insertError } = await supabase.from('wishes').insert({
         well_id: wellId,
         sender_id: user?.id || null,
-        sentence_starter: getTokenLabel(SENTENCE_STARTERS, sentenceStarter[0] || ''),
-        descriptors: descriptors.map((d) => getTokenLabel(DESCRIPTORS, d)),
-        outcome: getTokenLabel(OUTCOMES, outcome[0] || ''),
+        sentence_starter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+        descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
+        outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
         emojis: emojiLabels,
         custom_text: useCustom ? customText.trim() : null,
         gif_url: gifUrl,
@@ -86,7 +118,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
       if (insertError) throw insertError
 
       // Increment wish count
-      await supabase.rpc('increment_wish_count', { well_id: wellId })
+      await supabase.rpc('increment_wish_count', { p_well_id: wellId })
 
       // Show toss animation
       setShowToss(true)
@@ -141,9 +173,9 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
         {showToss && (
           <CoinTossAnimation
             wish={{
-              sentenceStarter: getTokenLabel(SENTENCE_STARTERS, sentenceStarter[0] || ''),
-              descriptors: descriptors.map((d) => getTokenLabel(DESCRIPTORS, d)),
-              outcome: getTokenLabel(OUTCOMES, outcome[0] || ''),
+              sentenceStarter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+              descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
+              outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
               emojis: emojiLabels,
               customText: useCustom ? customText : null,
               gifUrl,
@@ -214,28 +246,34 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
           ) : (
             <div className="space-y-6 mb-6">
               <TokenSelector
-                title="Start with..."
+                title="Choose a style"
                 tokens={SENTENCE_STARTERS}
                 selected={sentenceStarter}
-                onChange={setSentenceStarter}
+                onChange={handleStarterChange}
                 maxSelect={1}
               />
 
-              <TokenSelector
-                title="Add some descriptors"
-                tokens={DESCRIPTORS}
-                selected={descriptors}
-                onChange={setDescriptors}
-                maxSelect={2}
-              />
+              {currentStarterId && (
+                <>
+                  <TokenSelector
+                    title={isDirectType ? 'Pick your message' : 'Add meaning'}
+                    tokens={currentDescriptors}
+                    selected={descriptors}
+                    onChange={setDescriptors}
+                    maxSelect={maxDescriptors}
+                  />
 
-              <TokenSelector
-                title="End with encouragement"
-                tokens={OUTCOMES}
-                selected={outcome}
-                onChange={setOutcome}
-                maxSelect={1}
-              />
+                  {currentOutcomes.filter((o) => o.label !== '').length > 0 && (
+                    <TokenSelector
+                      title="Add an ending (optional)"
+                      tokens={currentOutcomes}
+                      selected={outcome}
+                      onChange={setOutcome}
+                      maxSelect={1}
+                    />
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -262,9 +300,9 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
             <div className="flex justify-center">
               <Coin
                 wish={{
-                  sentenceStarter: getTokenLabel(SENTENCE_STARTERS, sentenceStarter[0] || ''),
-                  descriptors: descriptors.map((d) => getTokenLabel(DESCRIPTORS, d)),
-                  outcome: getTokenLabel(OUTCOMES, outcome[0] || ''),
+                  sentenceStarter: getTokenLabel(SENTENCE_STARTERS, currentStarterId),
+                  descriptors: descriptors.map((d) => getTokenLabel(currentDescriptors, d)),
+                  outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
                   emojis: emojiLabels,
                   customText: useCustom ? customText : null,
                   gifUrl,

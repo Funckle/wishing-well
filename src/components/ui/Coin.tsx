@@ -20,6 +20,56 @@ interface CoinProps {
   className?: string
 }
 
+// SVG Coin component - simplified gold coin
+function CoinSVG({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Shadow layer */}
+      <circle fill="#D97706" cx="18" cy="19" r="17" />
+      {/* Main gold body */}
+      <circle fill="#FBBF24" cx="18" cy="17" r="17" />
+      {/* Inner gold highlight */}
+      <circle fill="#FCD34D" cx="18" cy="17" r="14" />
+      {/* Subtle inner ring */}
+      <circle fill="none" stroke="#D97706" strokeWidth="0.5" cx="18" cy="17" r="13" />
+      {/* Outer rim highlight */}
+      <circle fill="none" stroke="#FDE68A" strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
+    </svg>
+  )
+}
+
+// SVG for back of coin with star pattern
+function CoinBackSVG({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Shadow layer */}
+      <circle fill="#B45309" cx="18" cy="19" r="17" />
+      {/* Main gold body - slightly darker for back */}
+      <circle fill="#F59E0B" cx="18" cy="17" r="17" />
+      {/* Inner area */}
+      <circle fill="#FBBF24" cx="18" cy="17" r="14" />
+      {/* Decorative star pattern */}
+      <path
+        fill="#D97706"
+        d="M18 8 L19.5 14 L26 14 L21 18 L23 25 L18 21 L13 25 L15 18 L10 14 L16.5 14 Z"
+        opacity="0.6"
+      />
+      {/* Inner ring */}
+      <circle fill="none" stroke="#92400E" strokeWidth="0.5" cx="18" cy="17" r="13" />
+      {/* Outer rim */}
+      <circle fill="none" stroke="#FCD34D" strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
+    </svg>
+  )
+}
+
 export function Coin({ wish, size = 'md', onClick, isFlipped = false, className = '' }: CoinProps) {
   const [flipped, setFlipped] = useState(isFlipped)
 
@@ -30,13 +80,19 @@ export function Coin({ wish, size = 'md', onClick, isFlipped = false, className 
   }
 
   const textSizes = {
-    sm: 'text-[8px]',
-    md: 'text-xs',
-    lg: 'text-sm',
+    sm: 'text-[8px] leading-[1.2]',
+    md: 'text-xs leading-tight',
+    lg: 'text-sm leading-tight',
+  }
+
+  const paddingSizes = {
+    sm: 'p-2',
+    md: 'p-4',
+    lg: 'p-6',
   }
 
   const wishText = wish.customText ||
-    `${wish.sentenceStarter} ${wish.descriptors.join(' + ')} ${wish.outcome}`.trim()
+    `${wish.sentenceStarter} ${wish.descriptors.join(' and ')} ${wish.outcome}`.trim()
 
   const handleClick = () => {
     if (onClick) {
@@ -59,42 +115,44 @@ export function Coin({ wish, size = 'md', onClick, isFlipped = false, className 
       >
         {/* Front of coin - wish text */}
         <div
-          className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 shadow-lg border-4 border-amber-600 flex items-center justify-center p-2 backface-hidden"
+          className="absolute inset-0 backface-hidden"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className={`text-center ${textSizes[size]} text-amber-900 font-medium leading-tight`}>
-            <p className="break-words">{wishText}</p>
-            {wish.emojis.length > 0 && (
-              <p className="mt-1">{wish.emojis.join(' ')}</p>
-            )}
+          {/* SVG coin background */}
+          <CoinSVG className="absolute inset-0 w-full h-full drop-shadow-lg" />
+          {/* Text overlay */}
+          <div className={`absolute inset-0 flex items-center justify-center ${paddingSizes[size]}`}>
+            <div className={`text-center ${textSizes[size]} text-amber-900 font-medium`}>
+              <p className="break-words line-clamp-4">{wishText}</p>
+              {wish.emojis.length > 0 && (
+                <p className="mt-1">{wish.emojis.join(' ')}</p>
+              )}
+            </div>
           </div>
-          {/* Coin edge decoration */}
-          <div className="absolute inset-1 rounded-full border border-amber-400/50" />
-          <div className="absolute inset-2 rounded-full border border-amber-300/30" />
         </div>
 
         {/* Back of coin - avatar or pattern */}
         <div
-          className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 shadow-lg border-4 border-amber-700 flex items-center justify-center backface-hidden"
+          className="absolute inset-0 backface-hidden"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
-          {wish.senderAvatar ? (
-            <img
-              src={wish.senderAvatar}
-              alt="Sender"
-              className="w-3/4 h-3/4 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-3/4 h-3/4 rounded-full bg-amber-700/30 flex items-center justify-center">
-              <span className="text-amber-100 text-2xl">✨</span>
-            </div>
-          )}
-          {/* Coin edge decoration */}
-          <div className="absolute inset-1 rounded-full border border-amber-500/50" />
-          <div className="absolute inset-2 rounded-full border border-amber-400/30" />
+          {/* SVG coin background */}
+          <CoinBackSVG className="absolute inset-0 w-full h-full drop-shadow-lg" />
+          {/* Center content */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {wish.senderAvatar ? (
+              <img
+                src={wish.senderAvatar}
+                alt="Sender"
+                className="w-1/2 h-1/2 rounded-full object-cover border-2 border-amber-600"
+              />
+            ) : (
+              <span className="text-2xl">✨</span>
+            )}
+          </div>
         </div>
       </motion.div>
 
