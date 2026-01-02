@@ -222,7 +222,7 @@ export default function CreateWellPage() {
                   placeholder="your@email.com"
                   value={notificationEmail}
                   onChange={(e) => setNotificationEmail(e.target.value)}
-                  helperText="Leave blank for full anonymity"
+                  helperText="We'll email you when new wishes arrive"
                 />
               </div>
 
