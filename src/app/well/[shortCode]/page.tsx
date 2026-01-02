@@ -121,7 +121,8 @@ export default function WellPage({ params }: { params: PageParams }) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, shortCode, user?.id, isOwner])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shortCode, user?.id, isOwner])
 
   const handleFishCoin = async () => {
     const unviewedWish = wishes.find((w) => !w.is_viewed && w.rating === null)

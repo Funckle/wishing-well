@@ -41,7 +41,8 @@ export default function LeaderboardPage() {
     }
 
     fetchLeaderboard()
-  }, [supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const getRankIcon = (rank: number) => {
     switch (rank) {

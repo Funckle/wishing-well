@@ -57,7 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase, setUser])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase

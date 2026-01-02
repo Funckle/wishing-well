@@ -73,7 +73,8 @@ export default function ExplorePage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, user])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   return (
     <main className="min-h-screen pt-20 pb-8 px-4">
