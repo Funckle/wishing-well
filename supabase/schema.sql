@@ -116,7 +116,7 @@ BEGIN
   SET is_active = FALSE, closed_at = NOW()
   WHERE id = p_well_id AND wish_count >= wish_limit;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Function to update well average rating
 CREATE OR REPLACE FUNCTION update_well_rating(p_well_id UUID)
@@ -130,7 +130,7 @@ BEGIN
   )
   WHERE id = p_well_id;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Function to add points to a user
 CREATE OR REPLACE FUNCTION add_points(p_user_id UUID, p_points INTEGER)
@@ -153,7 +153,7 @@ BEGIN
     UPDATE profiles SET custom_wish_enabled = TRUE WHERE id = p_user_id AND custom_wish_enabled = FALSE;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Function to check and close expired wells
 CREATE OR REPLACE FUNCTION close_expired_wells()
@@ -163,7 +163,7 @@ BEGIN
   SET is_active = FALSE, closed_at = NOW(), is_public = TRUE
   WHERE is_active = TRUE AND expires_at < NOW();
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger to create profile on user signup
 -- Must use fully qualified schema and SET search_path for supabase_auth_admin
