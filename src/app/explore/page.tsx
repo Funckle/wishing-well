@@ -30,7 +30,7 @@ export default function ExplorePage() {
             .eq('sender_id', user.id)
 
           if (sentWishes) {
-            setSentWellIds(sentWishes.map((w) => w.well_id))
+            setSentWellIds(sentWishes.map((w: { well_id: string }) => w.well_id))
           }
         } else {
           // Anonymous user - get from localStorage
