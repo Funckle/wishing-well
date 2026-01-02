@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { NotificationBell } from '@/components/NotificationBell'
 
 export function Nav() {
   const { user, signOut } = useAuth()
@@ -30,6 +31,7 @@ export function Nav() {
           <Link href="/leaderboard" className="text-stone-600 hover:text-stone-900 transition hidden sm:block">
             Leaderboard
           </Link>
+          {user && <NotificationBell />}
           {user ? (
             isDashboard ? (
               <button

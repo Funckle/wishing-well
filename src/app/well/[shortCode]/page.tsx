@@ -156,6 +156,16 @@ export default function WellPage({ params }: { params: PageParams }) {
         user_id: currentWish.sender_id,
         points: rating,
       })
+
+      // Notify the sender about the rating
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
+      await supabase.from('notifications').insert({
+        user_id: currentWish.sender_id,
+        type: 'wish_rated',
+        title: `Your wish received ${rating} star${rating !== 1 ? 's' : ''}!`,
+        message: `${stars} (+${rating} points)`,
+        data: { well_id: well.id, wish_id: currentWish.id, rating, short_code: shortCode },
+      })
     }
 
     // Update well average rating (only for ratings > 0)
@@ -361,6 +371,8 @@ export default function WellPage({ params }: { params: PageParams }) {
         {showComposer && (
           <WishComposer
             wellId={well.id}
+            wellOwnerId={well.user_id}
+            wellShortCode={shortCode}
             onClose={() => setShowComposer(false)}
             onSuccess={() => {
               setShowComposer(false)

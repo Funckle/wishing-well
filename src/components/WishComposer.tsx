@@ -23,11 +23,13 @@ import { COIN_THEMES } from '@/lib/themes'
 
 interface WishComposerProps {
   wellId: string
+  wellOwnerId: string | null
+  wellShortCode: string
   onClose: () => void
   onSuccess: () => void
 }
 
-export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) {
+export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSuccess }: WishComposerProps) {
   const { user, profile } = useAuth()
   const supabase = createClient()
 
@@ -127,6 +129,17 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
       if (rpcError) {
         console.error('RPC error:', rpcError)
         throw rpcError
+      }
+
+      // Create notification for well owner (if they're logged in)
+      if (wellOwnerId) {
+        await supabase.from('notifications').insert({
+          user_id: wellOwnerId,
+          type: 'wish_received',
+          title: 'New wish in your well!',
+          message: wishText.slice(0, 50) + (wishText.length > 50 ? '...' : ''),
+          data: { well_id: wellId, short_code: wellShortCode },
+        })
       }
 
       // Show toss animation

@@ -196,14 +196,14 @@ export default function CreateWellPage() {
               </p>
 
               {/* Live Preview */}
-              <div className="mb-8">
-                <p className="text-sm font-medium text-stone-600 mb-3">Preview</p>
+              <div className="mb-6">
+                <p className="text-sm font-medium text-stone-600 mb-2">Preview</p>
                 <div className="relative overflow-hidden rounded-2xl border border-stone-200">
                   {(() => {
                     const bgTheme = getBackgroundThemeById(backgroundTheme)
                     const previewContent = (
-                      <div className="flex justify-center py-6">
-                        <div className="transform scale-75 origin-center">
+                      <div className="flex justify-center py-3">
+                        <div className="transform scale-50 origin-top" style={{ marginBottom: '-180px' }}>
                           <Well
                             context={context || "Your wish context will appear here..."}
                             wishCount={0}

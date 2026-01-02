@@ -219,6 +219,38 @@ export interface Database {
           window_start?: string
         }
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: 'wish_received' | 'wish_rated'
+          title: string
+          message: string | null
+          data: Record<string, unknown> | null
+          is_read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: 'wish_received' | 'wish_rated'
+          title: string
+          message?: string | null
+          data?: Record<string, unknown> | null
+          is_read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: 'wish_received' | 'wish_rated'
+          title?: string
+          message?: string | null
+          data?: Record<string, unknown> | null
+          is_read?: boolean
+          created_at?: string
+        }
+      }
     }
     Views: {
       leaderboard: {
@@ -253,3 +285,4 @@ export type Well = Database['public']['Tables']['wells']['Row']
 export type Wish = Database['public']['Tables']['wishes']['Row']
 export type Cosmetic = Database['public']['Tables']['cosmetics']['Row']
 export type UserCosmetic = Database['public']['Tables']['user_cosmetics']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
