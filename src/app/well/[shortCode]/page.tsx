@@ -2,12 +2,13 @@
 
 import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Well, Coin, StarRating, Confetti } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { formatTimeRemaining } from '@/lib/utils'
+import { formatTimeRemaining, hasAlreadySentToWell } from '@/lib/utils'
 import type { Well as WellType, Wish } from '@/types/database'
 import { WishComposer } from '@/components/WishComposer'
 
@@ -16,6 +17,7 @@ type PageParams = Promise<{ shortCode: string }>
 export default function WellPage({ params }: { params: PageParams }) {
   const resolvedParams = use(params)
   const { shortCode } = resolvedParams
+  const router = useRouter()
   const supabase = createClient()
   const { user } = useAuth()
 
@@ -28,6 +30,7 @@ export default function WellPage({ params }: { params: PageParams }) {
   const [showRating, setShowRating] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [isFishing, setIsFishing] = useState(false)
+  const [hasAlreadySent, setHasAlreadySent] = useState(false)
 
   const isOwner = user?.id === well?.user_id
 
@@ -46,6 +49,11 @@ export default function WellPage({ params }: { params: PageParams }) {
       }
 
       setWell(wellData)
+
+      // Check if anonymous user has already sent to this well
+      if (!user) {
+        setHasAlreadySent(hasAlreadySentToWell(wellData.id))
+      }
 
       // Fetch wishes if owner
       if (user?.id === wellData.user_id) {
@@ -219,9 +227,22 @@ export default function WellPage({ params }: { params: PageParams }) {
         {/* Actions for visitors */}
         {!isOwner && well.is_active && (
           <div className="mt-8 text-center">
-            <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
-              Send a Wish
-            </Button>
+            {hasAlreadySent ? (
+              <div className="bg-green-50 rounded-2xl p-6 border border-green-100">
+                <div className="text-3xl mb-2">✨</div>
+                <p className="text-green-700 font-medium">You already sent a wish to this well!</p>
+                <p className="text-green-600 text-sm mt-1">Your kindness has been received.</p>
+                <Link href="/explore" className="inline-block mt-4">
+                  <Button variant="outline" size="sm">
+                    Find Another Well
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
+                Send a Wish
+              </Button>
+            )}
           </div>
         )}
 
@@ -307,10 +328,8 @@ export default function WellPage({ params }: { params: PageParams }) {
             onClose={() => setShowComposer(false)}
             onSuccess={() => {
               setShowComposer(false)
-              // Refresh well data
-              setWell((prev) =>
-                prev ? { ...prev, wish_count: prev.wish_count + 1 } : prev
-              )
+              // Redirect to explore page after sending wish
+              router.push('/explore')
             }}
           />
         )}

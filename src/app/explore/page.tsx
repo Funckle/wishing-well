@@ -6,15 +6,19 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { createClient } from '@/lib/supabase/client'
-import { formatTimeRemaining } from '@/lib/utils'
+import { formatTimeRemaining, getSentWellIds } from '@/lib/utils'
 import type { Well } from '@/types/database'
 
 export default function ExplorePage() {
   const supabase = createClient()
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sentWellIds, setSentWellIds] = useState<string[]>([])
 
   useEffect(() => {
+    // Get sent well IDs from localStorage
+    setSentWellIds(getSentWellIds())
+
     async function fetchWells() {
       const { data, error } = await supabase
         .from('wells')
@@ -61,26 +65,54 @@ export default function ExplorePage() {
           </p>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
-          </div>
-        ) : wells.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
-            <div className="text-6xl mb-4">🌙</div>
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
-              No active wells right now
-            </h2>
-            <p className="text-stone-500 mb-6">
-              Be the first to open a wishing well!
-            </p>
-            <Link href="/create">
-              <Button>Open a Well</Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {wells.map((well, index) => (
+        {(() => {
+          const availableWells = wells.filter((well) => !sentWellIds.includes(well.id))
+
+          if (isLoading) {
+            return (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
+              </div>
+            )
+          }
+
+          if (wells.length === 0) {
+            return (
+              <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
+                <div className="text-6xl mb-4">🌙</div>
+                <h2 className="text-xl font-semibold text-stone-800 mb-2">
+                  No active wells right now
+                </h2>
+                <p className="text-stone-500 mb-6">
+                  Be the first to open a wishing well!
+                </p>
+                <Link href="/create">
+                  <Button>Open a Well</Button>
+                </Link>
+              </div>
+            )
+          }
+
+          if (availableWells.length === 0) {
+            return (
+              <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
+                <div className="text-6xl mb-4">✨</div>
+                <h2 className="text-xl font-semibold text-stone-800 mb-2">
+                  You&apos;ve sent wishes to all active wells!
+                </h2>
+                <p className="text-stone-500 mb-6">
+                  Check back later for new wells, or open your own.
+                </p>
+                <Link href="/create">
+                  <Button>Open a Well</Button>
+                </Link>
+              </div>
+            )
+          }
+
+          return (
+            <div className="grid gap-4">
+              {availableWells.map((well, index) => (
               <motion.div
                 key={well.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -125,8 +157,9 @@ export default function ExplorePage() {
                 </Link>
               </motion.div>
             ))}
-          </div>
-        )}
+            </div>
+          )
+        })()}
 
         <div className="text-center mt-12">
           <p className="text-stone-500 mb-4">Want to receive wishes yourself?</p>

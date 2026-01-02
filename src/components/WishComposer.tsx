@@ -17,6 +17,7 @@ import {
 } from '@/components/ui'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { markWellAsSent } from '@/lib/utils'
 
 interface WishComposerProps {
   wellId: string
@@ -135,6 +136,8 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
   const handleTossComplete = () => {
     setShowToss(false)
     setShowSuccess(true)
+    // Mark this well as sent in localStorage (for anonymous users)
+    markWellAsSent(wellId)
     setTimeout(() => {
       onSuccess()
     }, 2000)

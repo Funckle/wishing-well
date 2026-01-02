@@ -37,3 +37,30 @@ export function getEmbedCode(shortCode: string): string {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
+
+// LocalStorage keys
+const SENT_WISHES_KEY = 'wishing-well-sent-wishes'
+
+// Track which wells the user has sent wishes to (for anonymous users)
+export function markWellAsSent(wellId: string): void {
+  if (typeof window === 'undefined') return
+  const sent = getSentWellIds()
+  if (!sent.includes(wellId)) {
+    sent.push(wellId)
+    localStorage.setItem(SENT_WISHES_KEY, JSON.stringify(sent))
+  }
+}
+
+export function getSentWellIds(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(SENT_WISHES_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+export function hasAlreadySentToWell(wellId: string): boolean {
+  return getSentWellIds().includes(wellId)
+}
