@@ -205,6 +205,9 @@ CREATE POLICY "Users can update own profile" ON profiles
 CREATE POLICY "Active and public wells are viewable by everyone" ON wells
   FOR SELECT USING (is_active = true OR is_public = true);
 
+CREATE POLICY "Well owners can view their own wells" ON wells
+  FOR SELECT USING (auth.uid() = user_id);
+
 CREATE POLICY "Users can create wells" ON wells
   FOR INSERT WITH CHECK (true);
 
