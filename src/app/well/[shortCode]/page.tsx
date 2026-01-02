@@ -97,9 +97,9 @@ export default function WellPage({ params }: { params: PageParams }) {
           table: 'wells',
           filter: `short_code=eq.${shortCode}`,
         },
-        (payload) => {
+        (payload: { new: WellType | null }) => {
           if (payload.new) {
-            setWell(payload.new as WellType)
+            setWell(payload.new)
           }
         }
       )
@@ -110,9 +110,9 @@ export default function WellPage({ params }: { params: PageParams }) {
           schema: 'public',
           table: 'wishes',
         },
-        (payload) => {
+        (payload: { new: Wish }) => {
           if (isOwner) {
-            setWishes((prev) => [payload.new as Wish, ...prev])
+            setWishes((prev) => [payload.new, ...prev])
           }
         }
       )
