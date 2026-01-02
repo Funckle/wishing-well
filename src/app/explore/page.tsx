@@ -5,21 +5,37 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui'
 import { Nav } from '@/components/Nav'
+import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeRemaining, getSentWellIds } from '@/lib/utils'
 import type { Well } from '@/types/database'
 
 export default function ExplorePage() {
   const supabase = createClient()
+  const { user } = useAuth()
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sentWellIds, setSentWellIds] = useState<string[]>([])
 
   useEffect(() => {
-    // Get sent well IDs from localStorage
-    setSentWellIds(getSentWellIds())
+    async function fetchData() {
+      // Get sent well IDs
+      if (user) {
+        // Logged-in user - get from database
+        const { data: sentWishes } = await supabase
+          .from('wishes')
+          .select('well_id')
+          .eq('sender_id', user.id)
 
-    async function fetchWells() {
+        if (sentWishes) {
+          setSentWellIds(sentWishes.map((w) => w.well_id))
+        }
+      } else {
+        // Anonymous user - get from localStorage
+        setSentWellIds(getSentWellIds())
+      }
+
+      // Fetch active wells
       const { data, error } = await supabase
         .from('wells')
         .select('*')
@@ -33,7 +49,7 @@ export default function ExplorePage() {
       setIsLoading(false)
     }
 
-    fetchWells()
+    fetchData()
 
     // Subscribe to real-time updates
     const channel = supabase
@@ -42,7 +58,7 @@ export default function ExplorePage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'wells' },
         () => {
-          fetchWells()
+          fetchData()
         }
       )
       .subscribe()
@@ -50,7 +66,7 @@ export default function ExplorePage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, [supabase, user])
 
   return (
     <main className="min-h-screen pt-20 pb-8 px-4">
@@ -66,7 +82,10 @@ export default function ExplorePage() {
         </div>
 
         {(() => {
-          const availableWells = wells.filter((well) => !sentWellIds.includes(well.id))
+          // Filter out wells user has already sent to, and their own wells
+          const availableWells = wells.filter((well) =>
+            !sentWellIds.includes(well.id) && well.user_id !== user?.id
+          )
 
           if (isLoading) {
             return (

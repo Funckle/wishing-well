@@ -50,9 +50,21 @@ export default function WellPage({ params }: { params: PageParams }) {
 
       setWell(wellData)
 
-      // Check if anonymous user has already sent to this well
+      // Check if user has already sent to this well
       if (!user) {
+        // Anonymous user - check localStorage
         setHasAlreadySent(hasAlreadySentToWell(wellData.id))
+      } else if (user.id !== wellData.user_id) {
+        // Logged-in user (not owner) - check database
+        const { data: existingWish } = await supabase
+          .from('wishes')
+          .select('id')
+          .eq('well_id', wellData.id)
+          .eq('sender_id', user.id)
+          .limit(1)
+          .single()
+
+        setHasAlreadySent(!!existingWish)
       }
 
       // Fetch wishes if owner
