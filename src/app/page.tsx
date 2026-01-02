@@ -178,7 +178,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-rose-50">
+    <main className="h-screen flex flex-col bg-gradient-to-b from-amber-50 via-white to-rose-50 overflow-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -207,13 +207,13 @@ export default function HomePage() {
       </nav>
 
       {/* Single Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12">
+      <section className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-4">
         {/* Tagline */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-4"
         >
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-3">
             Toss a coin. Spread kindness.
@@ -228,7 +228,7 @@ export default function HomePage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative w-full max-w-lg mx-auto mb-10"
+          className="relative w-full max-w-lg mx-auto mb-6"
         >
           {/* The well SVG */}
           <div className="relative mx-auto w-56 h-56 md:w-72 md:h-72">
@@ -295,14 +295,14 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-sm text-stone-400 mt-8 text-center"
+          className="text-sm text-stone-400 mt-4 text-center"
         >
           No account needed to send wishes
         </motion.p>
       </section>
 
       {/* Minimal Footer */}
-      <footer className="py-6 px-4 border-t border-stone-100">
+      <footer className="py-4 px-4 border-t border-stone-100 flex-shrink-0">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-stone-500">
           <div className="flex items-center gap-2">
             <span>🌟</span>
