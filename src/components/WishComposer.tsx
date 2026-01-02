@@ -8,6 +8,7 @@ import {
   TokenSelector,
   Coin,
   CoinTossAnimation,
+  ThemePicker,
   SENTENCE_STARTERS,
   EMOJIS,
   getTokenLabel,
@@ -18,6 +19,7 @@ import {
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { markWellAsSent } from '@/lib/utils'
+import { COIN_THEMES } from '@/lib/themes'
 
 interface WishComposerProps {
   wellId: string
@@ -36,6 +38,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
   const [customText, setCustomText] = useState('')
   const [useCustom, setUseCustom] = useState(false)
   const [gifUrl, setGifUrl] = useState<string | null>(null)
+  const [coinTheme, setCoinTheme] = useState('gold')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showToss, setShowToss] = useState(false)
@@ -114,6 +117,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
         emojis: emojiLabels,
         custom_text: useCustom ? customText.trim() : null,
         gif_url: gifUrl,
+        coin_theme: coinTheme,
       })
 
       if (insertError) throw insertError
@@ -187,6 +191,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
               customText: useCustom ? customText : null,
               gifUrl,
             }}
+            coinTheme={coinTheme}
             onComplete={handleTossComplete}
           />
         )}
@@ -292,6 +297,16 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
             maxSelect={5}
           />
 
+          <div className="mt-6">
+            <ThemePicker
+              title="Coin Style"
+              themes={COIN_THEMES}
+              selected={coinTheme}
+              onChange={setCoinTheme}
+              columns={3}
+            />
+          </div>
+
           {/* GIF picker placeholder */}
           {canUseGif && (
             <div className="mt-6">
@@ -314,6 +329,7 @@ export function WishComposer({ wellId, onClose, onSuccess }: WishComposerProps) 
                   customText: useCustom ? customText : null,
                   gifUrl,
                 }}
+                coinTheme={coinTheme}
                 size="lg"
               />
             </div>

@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Button, Textarea, Input } from '@/components/ui'
+import { Button, Textarea, Input, ThemePicker } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { generateShortCode, getWellUrl } from '@/lib/utils'
 import { addDays } from 'date-fns'
+import { WELL_THEMES, BACKGROUND_THEMES } from '@/lib/themes'
 
 const WISH_LIMITS = [3, 5, 10, 25, 50, 100]
 
@@ -72,6 +73,8 @@ export default function CreateWellPage() {
   const [context, setContext] = useState('')
   const [wishLimit, setWishLimit] = useState(10)
   const [notificationEmail, setNotificationEmail] = useState('')
+  const [wellTheme, setWellTheme] = useState('classic')
+  const [backgroundTheme, setBackgroundTheme] = useState<string | null>('none')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdWell, setCreatedWell] = useState<{
@@ -99,6 +102,8 @@ export default function CreateWellPage() {
         wish_limit: wishLimit,
         expires_at: expiresAt,
         notification_email: notificationEmail || null,
+        well_theme: wellTheme,
+        background_theme: backgroundTheme === 'none' ? null : backgroundTheme,
       })
 
       if (insertError) throw insertError
@@ -210,6 +215,26 @@ export default function CreateWellPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="mb-6">
+                <ThemePicker
+                  title="Well Style"
+                  themes={WELL_THEMES}
+                  selected={wellTheme}
+                  onChange={setWellTheme}
+                  columns={3}
+                />
+              </div>
+
+              <div className="mb-6">
+                <ThemePicker
+                  title="Background Scene"
+                  themes={BACKGROUND_THEMES}
+                  selected={backgroundTheme}
+                  onChange={setBackgroundTheme}
+                  columns={3}
+                />
               </div>
 
               <div className="mb-6">

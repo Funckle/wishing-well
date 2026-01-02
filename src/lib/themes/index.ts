@@ -1,0 +1,88 @@
+// Theme system for visual customization
+// Provides types and helper functions for well, background, and coin themes
+
+// ============================================
+// TYPE DEFINITIONS
+// ============================================
+
+export interface WellTheme {
+  id: string
+  label: string
+  emoji: string
+  colors: {
+    roof: string
+    roofAccent: string
+    poles: string
+    polesAccent: string
+    base: string
+    baseAccent: string
+    rim: string
+    rimAccent: string
+    rope: string
+    grass: string
+  }
+}
+
+export interface BackgroundTheme {
+  id: string
+  label: string
+  emoji: string
+  gradient: {
+    from: string
+    via?: string
+    to: string
+  }
+  landscape: 'city' | 'beach' | 'mountains' | 'forest' | 'nightsky' | 'meadow' | 'none'
+}
+
+export interface CoinTheme {
+  id: string
+  label: string
+  emoji: string
+  colors: {
+    shadow: string
+    main: string
+    highlight: string
+    ring: string
+    rimHighlight: string
+    textColor: string
+    // Back of coin
+    backShadow: string
+    backMain: string
+    backHighlight: string
+    backPattern: string
+    backRing: string
+    backRimHighlight: string
+  }
+}
+
+// ============================================
+// RE-EXPORTS
+// ============================================
+
+export { WELL_THEMES } from './wellThemes'
+export { BACKGROUND_THEMES } from './backgroundThemes'
+export { COIN_THEMES } from './coinThemes'
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+import { WELL_THEMES } from './wellThemes'
+import { BACKGROUND_THEMES } from './backgroundThemes'
+import { COIN_THEMES } from './coinThemes'
+
+export function getWellThemeById(id: string | null | undefined): WellTheme {
+  if (!id) return WELL_THEMES[0]
+  return WELL_THEMES.find((t) => t.id === id) || WELL_THEMES[0]
+}
+
+export function getBackgroundThemeById(id: string | null | undefined): BackgroundTheme | null {
+  if (!id) return null
+  return BACKGROUND_THEMES.find((t) => t.id === id) || null
+}
+
+export function getCoinThemeById(id: string | null | undefined): CoinTheme {
+  if (!id) return COIN_THEMES[0]
+  return COIN_THEMES.find((t) => t.id === id) || COIN_THEMES[0]
+}

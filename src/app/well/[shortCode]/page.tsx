@@ -4,13 +4,14 @@ import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button, Well, Coin, StarRating, Confetti } from '@/components/ui'
+import { Button, Well, Coin, StarRating, Confetti, BackgroundScene } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { formatTimeRemaining, hasAlreadySentToWell } from '@/lib/utils'
 import type { Well as WellType, Wish } from '@/types/database'
 import { WishComposer } from '@/components/WishComposer'
+import { getBackgroundThemeById } from '@/lib/themes'
 
 type PageParams = Promise<{ shortCode: string }>
 
@@ -199,9 +200,10 @@ export default function WellPage({ params }: { params: PageParams }) {
   }
 
   const unviewedCount = wishes.filter((w) => !w.is_viewed).length
+  const backgroundTheme = getBackgroundThemeById(well.background_theme)
 
-  return (
-    <main className="min-h-screen pt-20 pb-8 px-4">
+  const pageContent = (
+    <>
       <Nav />
       <Confetti isActive={showConfetti} />
 
@@ -213,6 +215,7 @@ export default function WellPage({ params }: { params: PageParams }) {
           wishLimit={well.wish_limit}
           isActive={well.is_active}
           averageRating={well.average_rating}
+          wellTheme={well.well_theme}
           coins={wishes.map((w) => ({
             id: w.id,
             sentenceStarter: w.sentence_starter,
@@ -224,6 +227,7 @@ export default function WellPage({ params }: { params: PageParams }) {
             senderAvatar: null,
             rating: w.rating,
             isViewed: w.is_viewed,
+            coinTheme: w.coin_theme,
           }))}
           onFishCoin={isOwner ? handleFishCoin : undefined}
           showFishButton={isOwner && unviewedCount > 0}
@@ -282,6 +286,7 @@ export default function WellPage({ params }: { params: PageParams }) {
                           customText: wish.custom_text,
                           gifUrl: wish.gif_url,
                         }}
+                        coinTheme={wish.coin_theme}
                         size="sm"
                       />
                       <div className="flex-1">
@@ -365,6 +370,7 @@ export default function WellPage({ params }: { params: PageParams }) {
                     customText: currentWish.custom_text,
                     gifUrl: currentWish.gif_url,
                   }}
+                  coinTheme={currentWish.coin_theme}
                   size="lg"
                 />
               </div>
@@ -399,6 +405,23 @@ export default function WellPage({ params }: { params: PageParams }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </>
+  )
+
+  // Wrap in BackgroundScene if there's a background theme
+  if (backgroundTheme) {
+    return (
+      <BackgroundScene theme={backgroundTheme}>
+        <main className="min-h-screen pt-20 pb-8 px-4">
+          {pageContent}
+        </main>
+      </BackgroundScene>
+    )
+  }
+
+  return (
+    <main className="min-h-screen pt-20 pb-8 px-4">
+      {pageContent}
     </main>
   )
 }

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { getCoinThemeById, type CoinTheme } from '@/lib/themes'
 
 interface CoinProps {
   wish: {
@@ -15,13 +16,21 @@ interface CoinProps {
     rating?: number | null
   }
   size?: 'sm' | 'md' | 'lg'
+  coinTheme?: string | null
   onClick?: () => void
   isFlipped?: boolean
   className?: string
 }
 
-// SVG Coin component - simplified gold coin
-function CoinSVG({ className = '' }: { className?: string }) {
+// SVG Coin component with theme support
+function CoinSVG({
+  className = '',
+  theme,
+}: {
+  className?: string
+  theme: CoinTheme
+}) {
+  const c = theme.colors
   return (
     <svg
       viewBox="0 0 36 36"
@@ -29,21 +38,28 @@ function CoinSVG({ className = '' }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Shadow layer */}
-      <circle fill="#D97706" cx="18" cy="19" r="17" />
-      {/* Main gold body */}
-      <circle fill="#FBBF24" cx="18" cy="17" r="17" />
-      {/* Inner gold highlight */}
-      <circle fill="#FCD34D" cx="18" cy="17" r="14" />
+      <circle fill={c.shadow} cx="18" cy="19" r="17" />
+      {/* Main body */}
+      <circle fill={c.main} cx="18" cy="17" r="17" />
+      {/* Inner highlight */}
+      <circle fill={c.highlight} cx="18" cy="17" r="14" />
       {/* Subtle inner ring */}
-      <circle fill="none" stroke="#D97706" strokeWidth="0.5" cx="18" cy="17" r="13" />
+      <circle fill="none" stroke={c.ring} strokeWidth="0.5" cx="18" cy="17" r="13" />
       {/* Outer rim highlight */}
-      <circle fill="none" stroke="#FDE68A" strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
+      <circle fill="none" stroke={c.rimHighlight} strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
     </svg>
   )
 }
 
 // SVG for back of coin with star pattern
-function CoinBackSVG({ className = '' }: { className?: string }) {
+function CoinBackSVG({
+  className = '',
+  theme,
+}: {
+  className?: string
+  theme: CoinTheme
+}) {
+  const c = theme.colors
   return (
     <svg
       viewBox="0 0 36 36"
@@ -51,27 +67,35 @@ function CoinBackSVG({ className = '' }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Shadow layer */}
-      <circle fill="#B45309" cx="18" cy="19" r="17" />
-      {/* Main gold body - slightly darker for back */}
-      <circle fill="#F59E0B" cx="18" cy="17" r="17" />
+      <circle fill={c.backShadow} cx="18" cy="19" r="17" />
+      {/* Main body - slightly darker for back */}
+      <circle fill={c.backMain} cx="18" cy="17" r="17" />
       {/* Inner area */}
-      <circle fill="#FBBF24" cx="18" cy="17" r="14" />
+      <circle fill={c.backHighlight} cx="18" cy="17" r="14" />
       {/* Decorative star pattern */}
       <path
-        fill="#D97706"
+        fill={c.backPattern}
         d="M18 8 L19.5 14 L26 14 L21 18 L23 25 L18 21 L13 25 L15 18 L10 14 L16.5 14 Z"
         opacity="0.6"
       />
       {/* Inner ring */}
-      <circle fill="none" stroke="#92400E" strokeWidth="0.5" cx="18" cy="17" r="13" />
+      <circle fill="none" stroke={c.backRing} strokeWidth="0.5" cx="18" cy="17" r="13" />
       {/* Outer rim */}
-      <circle fill="none" stroke="#FCD34D" strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
+      <circle fill="none" stroke={c.backRimHighlight} strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
     </svg>
   )
 }
 
-export function Coin({ wish, size = 'md', onClick, isFlipped = false, className = '' }: CoinProps) {
+export function Coin({
+  wish,
+  size = 'md',
+  coinTheme,
+  onClick,
+  isFlipped = false,
+  className = '',
+}: CoinProps) {
   const [flipped, setFlipped] = useState(isFlipped)
+  const theme = getCoinThemeById(coinTheme)
 
   const sizeClasses = {
     sm: 'w-20 h-20',
@@ -119,10 +143,10 @@ export function Coin({ wish, size = 'md', onClick, isFlipped = false, className 
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* SVG coin background */}
-          <CoinSVG className="absolute inset-0 w-full h-full drop-shadow-lg" />
+          <CoinSVG className="absolute inset-0 w-full h-full drop-shadow-lg" theme={theme} />
           {/* Text overlay */}
           <div className={`absolute inset-0 flex items-center justify-center ${paddingSizes[size]}`}>
-            <div className={`text-center ${textSizes[size]} text-amber-900 font-medium`}>
+            <div className={`text-center ${textSizes[size]} ${theme.colors.textColor} font-medium`}>
               <p className="break-words line-clamp-4">{wishText}</p>
               {wish.emojis.length > 0 && (
                 <p className="mt-1">{wish.emojis.join(' ')}</p>
@@ -140,7 +164,7 @@ export function Coin({ wish, size = 'md', onClick, isFlipped = false, className 
           }}
         >
           {/* SVG coin background */}
-          <CoinBackSVG className="absolute inset-0 w-full h-full drop-shadow-lg" />
+          <CoinBackSVG className="absolute inset-0 w-full h-full drop-shadow-lg" theme={theme} />
           {/* Center content */}
           <div className="absolute inset-0 flex items-center justify-center">
             {wish.senderAvatar ? (
@@ -175,9 +199,11 @@ export function Coin({ wish, size = 'md', onClick, isFlipped = false, className 
 
 export function CoinTossAnimation({
   wish,
+  coinTheme,
   onComplete
 }: {
   wish: CoinProps['wish']
+  coinTheme?: string | null
   onComplete?: () => void
 }) {
   return (
@@ -201,7 +227,7 @@ export function CoinTossAnimation({
         }}
         onAnimationComplete={onComplete}
       >
-        <Coin wish={wish} size="lg" />
+        <Coin wish={wish} size="lg" coinTheme={coinTheme} />
       </motion.div>
 
       {/* Splash effect at the end */}

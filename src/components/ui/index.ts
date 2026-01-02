@@ -17,3 +17,5 @@ export {
 } from './TokenSelector'
 export type { TokenGroup } from './TokenSelector'
 export { Confetti } from './Confetti'
+export { ThemePicker } from './ThemePicker'
+export { BackgroundScene } from './BackgroundScene'

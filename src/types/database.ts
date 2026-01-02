@@ -59,6 +59,8 @@ export interface Database {
           created_at: string
           closed_at: string | null
           notification_email: string | null
+          well_theme: string | null
+          background_theme: string | null
         }
         Insert: {
           id?: string
@@ -74,6 +76,8 @@ export interface Database {
           created_at?: string
           closed_at?: string | null
           notification_email?: string | null
+          well_theme?: string | null
+          background_theme?: string | null
         }
         Update: {
           id?: string
@@ -89,6 +93,8 @@ export interface Database {
           created_at?: string
           closed_at?: string | null
           notification_email?: string | null
+          well_theme?: string | null
+          background_theme?: string | null
         }
       }
       wishes: {
@@ -107,6 +113,7 @@ export interface Database {
           is_viewed: boolean
           created_at: string
           rated_at: string | null
+          coin_theme: string | null
         }
         Insert: {
           id?: string
@@ -123,6 +130,7 @@ export interface Database {
           is_viewed?: boolean
           created_at?: string
           rated_at?: string | null
+          coin_theme?: string | null
         }
         Update: {
           id?: string
@@ -139,6 +147,7 @@ export interface Database {
           is_viewed?: boolean
           created_at?: string
           rated_at?: string | null
+          coin_theme?: string | null
         }
       }
       cosmetics: {
