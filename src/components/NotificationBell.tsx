@@ -53,8 +53,8 @@ export function NotificationBell() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev])
+        (payload: { new: Notification }) => {
+          setNotifications((prev) => [payload.new, ...prev])
         }
       )
       .on(
@@ -65,9 +65,9 @@ export function NotificationBell() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        (payload: { new: Notification }) => {
           setNotifications((prev) =>
-            prev.map((n) => (n.id === payload.new.id ? payload.new as Notification : n))
+            prev.map((n) => (n.id === payload.new.id ? payload.new : n))
           )
         }
       )
@@ -76,7 +76,8 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user, supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   // Close dropdown when clicking outside
   useEffect(() => {
