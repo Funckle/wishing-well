@@ -91,11 +91,11 @@ function FloatingCoin({
 
         {/* Star rating */}
         {wish.rating && (
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-0.5">
             {[...Array(5)].map((_, i) => (
               <span
                 key={i}
-                className={`text-[8px] ${i < wish.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                className={`text-sm ${i < wish.rating ? 'text-yellow-500' : 'text-gray-300'}`}
               >
                 ★
               </span>

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui'
 import { Nav } from '@/components/Nav'
+import { UsernameGenerator } from '@/components/UsernameGenerator'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeRemaining, getWellUrl, getEmbedCode } from '@/lib/utils'
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
+  const [showUsernameGenerator, setShowUsernameGenerator] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -71,9 +73,17 @@ export default function DashboardPage() {
               {profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-stone-800">
-                {profile?.username || 'Anonymous Wisher'}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-stone-800">
+                  {profile?.username || 'Anonymous Wisher'}
+                </h1>
+                <button
+                  onClick={() => setShowUsernameGenerator(true)}
+                  className="px-2 py-1 text-xs bg-stone-100 hover:bg-rose-100 text-stone-500 hover:text-rose-600 rounded-full transition"
+                >
+                  Change
+                </button>
+              </div>
               <p className="text-stone-500">{user?.email}</p>
             </div>
             <div className="text-right">
@@ -242,6 +252,30 @@ export default function DashboardPage() {
           </section>
         )}
       </div>
+
+      {/* Username Generator Modal */}
+      <AnimatePresence>
+        {showUsernameGenerator && (
+          <UsernameGenerator
+            currentUsername={profile?.username}
+            onSave={async (username) => {
+              const { error } = await supabase
+                .from('profiles')
+                .update({ username })
+                .eq('id', user?.id)
+
+              if (error) {
+                return { error: new Error(error.message) }
+              }
+
+              // Refresh the page to show updated username
+              window.location.reload()
+              return { error: null }
+            }}
+            onClose={() => setShowUsernameGenerator(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Embed Modal */}
       {showEmbedModal && (

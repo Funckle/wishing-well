@@ -258,58 +258,47 @@ export default function WellPage({ params }: { params: PageParams }) {
           </div>
         )}
 
-        {/* Owner view - list of wishes */}
-        {isOwner && wishes.length > 0 && (
+        {/* Owner view - list of rated wishes */}
+        {isOwner && wishes.filter((w) => w.rating !== null).length > 0 && (
           <div className="mt-12">
             <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
             <div className="space-y-4">
-              {wishes.map((wish) => (
-                <motion.div
-                  key={wish.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl p-4 shadow border border-stone-100"
-                >
-                  <div className="flex items-start gap-4">
-                    <Coin
-                      wish={{
-                        sentenceStarter: wish.sentence_starter,
-                        descriptors: wish.descriptors,
-                        outcome: wish.outcome,
-                        emojis: wish.emojis,
-                        customText: wish.custom_text,
-                        gifUrl: wish.gif_url,
-                        rating: wish.rating,
-                      }}
-                      size="sm"
-                    />
-                    <div className="flex-1">
-                      <p className="text-stone-700">
-                        {wish.custom_text ||
-                          `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
-                      </p>
-                      {wish.emojis.length > 0 && (
-                        <p className="text-lg mt-1">{wish.emojis.join(' ')}</p>
-                      )}
-                      {wish.rating !== null ? (
+              {wishes
+                .filter((wish) => wish.rating !== null)
+                .map((wish) => (
+                  <motion.div
+                    key={wish.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl p-4 shadow border border-stone-100"
+                  >
+                    <div className="flex items-start gap-4">
+                      <Coin
+                        wish={{
+                          sentenceStarter: wish.sentence_starter,
+                          descriptors: wish.descriptors,
+                          outcome: wish.outcome,
+                          emojis: wish.emojis,
+                          customText: wish.custom_text,
+                          gifUrl: wish.gif_url,
+                        }}
+                        size="sm"
+                      />
+                      <div className="flex-1">
+                        <p className="text-stone-700">
+                          {wish.custom_text ||
+                            `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
+                        </p>
+                        {wish.emojis.length > 0 && (
+                          <p className="text-lg mt-1">{wish.emojis.join(' ')}</p>
+                        )}
                         <div className="mt-2">
                           <StarRating value={wish.rating} readonly size="sm" />
                         </div>
-                      ) : (
-                        <button
-                          className="mt-2 text-sm text-rose-500 hover:underline"
-                          onClick={() => {
-                            setCurrentWish(wish)
-                            setShowRating(true)
-                          }}
-                        >
-                          Rate this wish
-                        </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
             </div>
           </div>
         )}
