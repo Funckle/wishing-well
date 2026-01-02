@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
-import { useAuth } from '@/components/auth/AuthProvider'
+import { Nav } from '@/components/Nav'
 
 // Example wishes to display on floating coins
 const EXAMPLE_WISHES = [
@@ -163,7 +163,6 @@ function HeroWellSVG({ className = '' }: { className?: string }) {
 }
 
 export default function HomePage() {
-  const { user } = useAuth()
   const [visibleCoins, setVisibleCoins] = useState<number[]>([0, 1, 2])
 
   // Rotate which 3 coins are visible every 6 seconds
@@ -179,32 +178,7 @@ export default function HomePage() {
 
   return (
     <main className="h-screen flex flex-col bg-gradient-to-b from-amber-50 via-white to-rose-50 overflow-hidden">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌟</span>
-            <span className="font-bold text-xl text-stone-800">Wishing Well</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/explore" className="text-stone-600 hover:text-stone-900 transition hidden sm:block">
-              Explore
-            </Link>
-            <Link href="/leaderboard" className="text-stone-600 hover:text-stone-900 transition hidden sm:block">
-              Leaderboard
-            </Link>
-            {user ? (
-              <Link href="/dashboard">
-                <Button size="sm">Dashboard</Button>
-              </Link>
-            ) : (
-              <Link href="/login">
-                <Button size="sm" variant="outline">Sign In</Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Nav />
 
       {/* Single Hero Section */}
       <section className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-4">

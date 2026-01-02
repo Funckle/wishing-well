@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button, Textarea, Input } from '@/components/ui'
+import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { generateShortCode, getWellUrl } from '@/lib/utils'
@@ -117,13 +118,9 @@ export default function CreateWellPage() {
   }
 
   return (
-    <main className="min-h-screen py-20 px-4">
+    <main className="min-h-screen pt-20 pb-8 px-4">
+      <Nav />
       <div className="max-w-xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
-          <span className="text-2xl">🌟</span>
-          <span className="font-bold text-xl text-stone-800">Wishing Well</span>
-        </Link>
-
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[1, 2, 3].map((s) => (

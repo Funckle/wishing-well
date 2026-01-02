@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 export default function LoginPage() {
@@ -26,10 +27,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4">
-      <Link href="/" className="flex items-center gap-2 mb-8">
-        <span className="text-3xl">🌟</span>
-        <span className="font-bold text-2xl text-stone-800">Wishing Well</span>
-      </Link>
+      <Nav />
 
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-stone-100">
         <LoginForm />

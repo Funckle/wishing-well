@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui'
+import { Nav } from '@/components/Nav'
 import { createClient } from '@/lib/supabase/client'
 
 interface LeaderboardEntry {
@@ -62,13 +63,10 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <main className="min-h-screen py-20 px-4">
+    <main className="min-h-screen pt-20 pb-8 px-4">
+      <Nav />
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <span className="text-2xl">🌟</span>
-            <span className="font-bold text-xl text-stone-800">Wishing Well</span>
-          </Link>
           <h1 className="text-3xl font-bold text-stone-800 mb-3">
             🏆 Leaderboard
           </h1>

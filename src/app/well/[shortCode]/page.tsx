@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Well, Coin, StarRating, Confetti } from '@/components/ui'
+import { Nav } from '@/components/Nav'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { formatTimeRemaining } from '@/lib/utils'
@@ -180,15 +181,11 @@ export default function WellPage({ params }: { params: PageParams }) {
   const unviewedCount = wishes.filter((w) => !w.is_viewed).length
 
   return (
-    <main className="min-h-screen py-20 px-4">
+    <main className="min-h-screen pt-20 pb-8 px-4">
+      <Nav />
       <Confetti isActive={showConfetti} />
 
       <div className="max-w-2xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
-          <span className="text-2xl">🌟</span>
-          <span className="font-bold text-xl text-stone-800">Wishing Well</span>
-        </Link>
-
         {/* Well Display */}
         <Well
           context={well.context}

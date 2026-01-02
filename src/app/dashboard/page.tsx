@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui'
+import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { formatTimeRemaining, getWellUrl, getEmbedCode } from '@/lib/utils'
@@ -44,11 +45,6 @@ export default function DashboardPage() {
     setIsLoading(false)
   }
 
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/')
-  }
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
   }
@@ -65,22 +61,9 @@ export default function DashboardPage() {
   const closedWells = wells.filter((w) => !w.is_active)
 
   return (
-    <main className="min-h-screen py-20 px-4">
+    <main className="min-h-screen pt-20 pb-8 px-4">
+      <Nav />
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌟</span>
-            <span className="font-bold text-xl text-stone-800">Wishing Well</span>
-          </Link>
-          <button
-            onClick={handleSignOut}
-            className="text-stone-500 hover:text-stone-700 transition"
-          >
-            Sign Out
-          </button>
-        </div>
-
         {/* Profile Stats */}
         <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-stone-100">
           <div className="flex items-center gap-6">
