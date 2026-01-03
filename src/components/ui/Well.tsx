@@ -131,7 +131,7 @@ export function Well({
     return (
       <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
         <WellSVG
-          className="h-[140%] w-auto drop-shadow-xl"
+          className="h-[105%] w-auto drop-shadow-xl"
           theme={theme}
         />
       </div>
