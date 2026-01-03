@@ -218,7 +218,7 @@ export default function CreateWellPage() {
 
                     if (bgTheme) {
                       return (
-                        <BackgroundScene theme={bgTheme}>
+                        <BackgroundScene theme={bgTheme} preview>
                           {previewContent}
                         </BackgroundScene>
                       )
