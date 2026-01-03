@@ -29,29 +29,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
-      setLocalUser(session?.user ?? null)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
 
-      if (session?.user) {
-        await fetchProfile(session.user.id)
+        if (error) {
+          console.error('Auth session error:', error)
+          // Clear potentially corrupted session
+          await supabase.auth.signOut()
+          return
+        }
+
+        setSession(session)
+        setLocalUser(session?.user ?? null)
+
+        if (session?.user) {
+          await fetchProfile(session.user.id)
+        }
+      } catch (err) {
+        console.error('Failed to get auth session:', err)
+        // Clear potentially corrupted session
+        try {
+          await supabase.auth.signOut()
+        } catch {
+          // Ignore signOut errors
+        }
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     getSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event: AuthChangeEvent, session: Session | null) => {
-        setSession(session)
-        setLocalUser(session?.user ?? null)
+        try {
+          setSession(session)
+          setLocalUser(session?.user ?? null)
 
-        if (session?.user) {
-          await fetchProfile(session.user.id)
-          setUser({ id: session.user.id, email: session.user.email })
-        } else {
-          setProfile(null)
-          setUser(null)
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+            setUser({ id: session.user.id, email: session.user.email })
+          } else {
+            setProfile(null)
+            setUser(null)
+          }
+        } catch (err) {
+          console.error('Auth state change error:', err)
         }
       }
     )
@@ -61,15 +84,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-    if (!error && data) {
-      setProfile(data)
-      setUser({ id: userId, email: user?.email, profile: data })
+      if (!error && data) {
+        setProfile(data)
+        setUser({ id: userId, email: user?.email, profile: data })
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err)
+      // Don't throw - just continue without profile
     }
   }
 
