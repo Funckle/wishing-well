@@ -29,6 +29,8 @@ interface WellProps {
   }>
   onFishCoin?: () => void
   showFishButton?: boolean
+  /** When true, only shows the well SVG without context, progress, or badges */
+  previewMode?: boolean
 }
 
 // Well SVG component with theme support
@@ -104,6 +106,7 @@ export function Well({
   coins = [],
   onFishCoin,
   showFishButton = false,
+  previewMode = false,
 }: WellProps) {
   const [isFishing, setIsFishing] = useState(false)
   // For owner: show rated progress. For visitor: show received progress
@@ -122,6 +125,18 @@ export function Well({
   }
 
   const unviewedCount = coins.filter(c => !c.isViewed).length
+
+  // Preview mode: just the well SVG
+  if (previewMode) {
+    return (
+      <div className="relative w-full h-full flex items-end justify-center">
+        <WellSVG
+          className="w-full h-auto drop-shadow-xl"
+          theme={theme}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full max-w-md mx-auto flex flex-col">

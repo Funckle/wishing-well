@@ -202,18 +202,15 @@ export default function CreateWellPage() {
                   {(() => {
                     const bgTheme = getBackgroundThemeById(backgroundTheme)
                     const previewContent = (
-                      <div className="flex justify-center pt-2">
-                        <div className="transform scale-[0.4] origin-top">
-                          <Well
-                            context={context || "Your wish context will appear here..."}
-                            wishCount={0}
-                            wishLimit={wishLimit}
-                            isActive={true}
-                            wellTheme={wellTheme}
-                            coins={[]}
-                          />
-                        </div>
-                      </div>
+                      <Well
+                        context=""
+                        wishCount={0}
+                        wishLimit={wishLimit}
+                        isActive={true}
+                        wellTheme={wellTheme}
+                        coins={[]}
+                        previewMode
+                      />
                     )
 
                     if (bgTheme) {
