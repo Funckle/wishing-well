@@ -70,7 +70,6 @@ interface RatingModalProps {
     outcome: string
     emojis: string[]
     customText?: string | null
-    gifUrl?: string | null
   }
   onRate: (rating: number) => void
   onClose: () => void
@@ -111,13 +110,6 @@ export function RatingModal({ wish, onRate, onClose }: RatingModalProps) {
           <p className="text-center text-stone-700 font-medium">{wishText}</p>
           {wish.emojis.length > 0 && (
             <p className="text-center text-lg mt-2">{wish.emojis.join(' ')}</p>
-          )}
-          {wish.gifUrl && (
-            <img
-              src={wish.gifUrl}
-              alt="GIF"
-              className="mt-3 rounded-lg mx-auto max-h-32 object-contain"
-            />
           )}
         </div>
 

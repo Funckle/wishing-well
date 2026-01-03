@@ -240,16 +240,6 @@ export default function DashboardPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <div
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
-                profile?.gif_enabled
-                  ? 'bg-[var(--color-moss)]/20 text-[var(--color-moss-deep)]'
-                  : 'bg-[var(--color-sand)] text-[var(--text-faded)]'
-              }`}
-            >
-              <span>&#x1F3AC;</span>
-              <span>GIFs {profile?.gif_enabled ? 'Unlocked' : '(50 pts)'}</span>
-            </div>
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
                 profile?.custom_wish_enabled
                   ? 'bg-[var(--color-moss)]/20 text-[var(--color-moss-deep)]'
                   : 'bg-[var(--color-sand)] text-[var(--text-faded)]'

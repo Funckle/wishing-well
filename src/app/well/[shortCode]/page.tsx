@@ -293,7 +293,6 @@ export default function WellPage({ params }: { params: PageParams }) {
                             outcome: wish.outcome,
                             emojis: wish.emojis,
                             customText: wish.custom_text,
-                            gifUrl: wish.gif_url,
                           }}
                           coinTheme={wish.coin_theme}
                           size="sm"
@@ -397,7 +396,6 @@ export default function WellPage({ params }: { params: PageParams }) {
               outcome: w.outcome,
               emojis: w.emojis,
               customText: w.custom_text,
-              gifUrl: w.gif_url,
               senderAvatar: null,
               rating: w.rating,
               isViewed: w.is_viewed,
@@ -453,7 +451,6 @@ export default function WellPage({ params }: { params: PageParams }) {
                     outcome: currentWish.outcome,
                     emojis: currentWish.emojis,
                     customText: currentWish.custom_text,
-                    gifUrl: currentWish.gif_url,
                   }}
                   coinTheme={currentWish.coin_theme}
                   size="lg"

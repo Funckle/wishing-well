@@ -176,11 +176,6 @@ export default function HowItWorksPage() {
               description="Unlock at 100 points — write anything you want"
             />
             <FeatureCard
-              emoji="🎁"
-              title="GIF Wishes"
-              description="Coming soon — add animated GIFs to your wishes"
-            />
-            <FeatureCard
               emoji="🥇"
               title="Leaderboard"
               description="Climb the ranks of kindness"

@@ -11,7 +11,6 @@ interface CoinProps {
     outcome: string
     emojis: string[]
     customText?: string | null
-    gifUrl?: string | null
     senderAvatar?: string | null
     rating?: number | null
   }

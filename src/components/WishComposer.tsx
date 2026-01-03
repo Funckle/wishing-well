@@ -39,7 +39,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
   const [emojis, setEmojis] = useState<string[]>([])
   const [customText, setCustomText] = useState('')
   const [useCustom, setUseCustom] = useState(false)
-  const [gifUrl, setGifUrl] = useState<string | null>(null)
   const [coinTheme, setCoinTheme] = useState('gold')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +46,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
   const [showSuccess, setShowSuccess] = useState(false)
 
   const canUseCustom = profile?.custom_wish_enabled ?? false
-  const canUseGif = profile?.gif_enabled ?? false
 
   // Get dynamic descriptors/outcomes based on selected starter
   const currentStarterId = sentenceStarter[0] || ''
@@ -118,7 +116,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
         outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
         emojis: emojiLabels,
         custom_text: useCustom ? customText.trim() : null,
-        gif_url: gifUrl,
         coin_theme: coinTheme,
       })
 
@@ -202,7 +199,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
               outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
               emojis: emojiLabels,
               customText: useCustom ? customText : null,
-              gifUrl,
             }}
             coinTheme={coinTheme}
             onComplete={handleTossComplete}
@@ -320,15 +316,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
             />
           </div>
 
-          {/* GIF picker placeholder */}
-          {canUseGif && (
-            <div className="mt-6">
-              <p className="text-sm text-stone-500 mb-2">
-                🎁 You&apos;ve unlocked GIFs! (Coming soon)
-              </p>
-            </div>
-          )}
-
           {/* Preview */}
           <div className="mt-6 mb-6">
             <p className="text-sm font-medium text-stone-600 mb-3">Preview:</p>
@@ -340,7 +327,6 @@ export function WishComposer({ wellId, wellOwnerId, wellShortCode, onClose, onSu
                   outcome: getTokenLabel(currentOutcomes, outcome[0] || ''),
                   emojis: emojiLabels,
                   customText: useCustom ? customText : null,
-                  gifUrl,
                 }}
                 coinTheme={coinTheme}
                 size="lg"
