@@ -47,17 +47,19 @@ export function BackgroundScene({ theme, children, preview = false }: Background
   if (preview) {
     return (
       <div className="relative h-full w-full overflow-hidden" style={gradientStyle}>
-        {/* Background image - absolute to bottom, scaled to fit */}
+        {/* Background image - absolute to bottom, scaled by height */}
         {backgroundImage && (
-          <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none flex justify-center">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-end justify-center">
             <Image
               src={backgroundImage}
               alt=""
-              className="opacity-60 object-cover object-bottom"
+              className="opacity-60"
               style={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '120%',
+                width: 'auto',
+                height: '100%',
+                minWidth: '100%',
+                objectFit: 'cover',
+                objectPosition: 'bottom center',
               }}
             />
             {/* Gradient overlay */}
