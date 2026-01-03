@@ -19,17 +19,17 @@ const EXAMPLE_WISHES = [
   { text: 'Keep shining — we see it', emojis: ['☀️'], rating: 4 },
 ]
 
-// Positions around the well for floating coins
+// Positions around the well for floating coins (scaled for larger well)
 const COIN_POSITIONS = [
-  { x: -140, y: -80 },   // top left
-  { x: 140, y: -60 },    // top right
-  { x: -160, y: 60 },    // mid left
-  { x: 160, y: 80 },     // mid right
-  { x: -120, y: 180 },   // bottom left
-  { x: 130, y: 160 },    // bottom right
-  { x: 0, y: -120 },     // top center
-  { x: -180, y: 0 },     // far left
-  { x: 180, y: 20 },     // far right
+  { x: -280, y: -160 },  // top left
+  { x: 280, y: -120 },   // top right
+  { x: -320, y: 120 },   // mid left
+  { x: 320, y: 160 },    // mid right
+  { x: -240, y: 360 },   // bottom left
+  { x: 260, y: 320 },    // bottom right
+  { x: 0, y: -240 },     // top center
+  { x: -360, y: 0 },     // far left
+  { x: 360, y: 40 },     // far right
 ]
 
 // SVG Coin for floating wishes
@@ -216,10 +216,10 @@ export default function HomePage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative w-full max-w-lg mx-auto mb-6"
+          className="relative w-full max-w-3xl mx-auto mb-6"
         >
           {/* The well SVG */}
-          <div className="relative mx-auto w-56 h-56 md:w-72 md:h-72">
+          <div className="relative mx-auto w-[28rem] h-[28rem] md:w-[36rem] md:h-[36rem]">
             <HeroWellSVG className="w-full h-full drop-shadow-xl" />
 
             {/* Sparkle effects on well */}
