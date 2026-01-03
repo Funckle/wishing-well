@@ -246,125 +246,130 @@ export default function WellPage({ params }: { params: PageParams }) {
       <Nav />
       <Confetti isActive={showConfetti} />
 
-      <div className="max-w-2xl mx-auto">
-        {/* Well Display */}
-        <Well
-          context={well.context}
-          wishCount={well.wish_count}
-          wishLimit={well.wish_limit}
-          isActive={well.is_active}
-          averageRating={well.average_rating}
-          wellTheme={well.well_theme}
-          isOwner={isOwner}
-          ratedCount={ratedCount}
-          coins={wishes.map((w) => ({
-            id: w.id,
-            sentenceStarter: w.sentence_starter,
-            descriptors: w.descriptors,
-            outcome: w.outcome,
-            emojis: w.emojis,
-            customText: w.custom_text,
-            gifUrl: w.gif_url,
-            senderAvatar: null,
-            rating: w.rating,
-            isViewed: w.is_viewed,
-            coinTheme: w.coin_theme,
-          }))}
-          onFishCoin={isOwner ? handleFishCoin : undefined}
-          showFishButton={isOwner && unviewedCount > 0}
-        />
-
-        {/* Time remaining */}
-        {well.is_active && (
-          <div className="text-center mt-4 text-stone-500">
-            <span className="text-sm">⏱️ {formatTimeRemaining(well.expires_at)}</span>
-          </div>
-        )}
-
-        {/* Actions for visitors */}
-        {!isOwner && well.is_active && (
-          <div className="mt-8 text-center">
-            {hasAlreadySent ? (
-              <div className="bg-green-50 rounded-2xl p-6 border border-green-100">
-                <div className="text-3xl mb-2">✨</div>
-                <p className="text-green-700 font-medium">You already sent a wish to this well!</p>
-                <p className="text-green-600 text-sm mt-1">Your kindness has been received.</p>
-                <Link href="/explore" className="inline-block mt-4">
-                  <Button variant="outline" size="sm">
-                    Find Another Well
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
-                Send a Wish
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Owner view - list of good wishes (3+ stars only) */}
-        {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
-            <div className="space-y-4">
-              {wishes
-                .filter((wish) => wish.rating !== null && wish.rating >= 3)
-                .map((wish) => (
-                  <motion.div
-                    key={wish.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl p-4 shadow border border-stone-100"
-                  >
-                    <div className="flex items-start gap-4">
-                      <Coin
-                        wish={{
-                          sentenceStarter: wish.sentence_starter,
-                          descriptors: wish.descriptors,
-                          outcome: wish.outcome,
-                          emojis: wish.emojis,
-                          customText: wish.custom_text,
-                          gifUrl: wish.gif_url,
-                        }}
-                        coinTheme={wish.coin_theme}
-                        size="sm"
-                      />
-                      <div className="flex-1">
-                        <p className="text-stone-700">
-                          {wish.custom_text ||
-                            `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
-                        </p>
-                        {wish.emojis.length > 0 && (
-                          <p className="text-lg mt-1">{wish.emojis.join(' ')}</p>
-                        )}
-                        <div className="mt-2">
-                          <StarRating value={wish.rating} readonly size="sm" />
+      <div className="max-w-2xl mx-auto flex flex-col min-h-[calc(100vh-6rem)]">
+        {/* Top content - grows to push well down */}
+        <div className="flex-1">
+          {/* Owner view - list of good wishes (3+ stars only) */}
+          {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
+              <div className="space-y-4">
+                {wishes
+                  .filter((wish) => wish.rating !== null && wish.rating >= 3)
+                  .map((wish) => (
+                    <motion.div
+                      key={wish.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow border border-stone-100"
+                    >
+                      <div className="flex items-start gap-4">
+                        <Coin
+                          wish={{
+                            sentenceStarter: wish.sentence_starter,
+                            descriptors: wish.descriptors,
+                            outcome: wish.outcome,
+                            emojis: wish.emojis,
+                            customText: wish.custom_text,
+                            gifUrl: wish.gif_url,
+                          }}
+                          coinTheme={wish.coin_theme}
+                          size="sm"
+                        />
+                        <div className="flex-1">
+                          <p className="text-stone-700">
+                            {wish.custom_text ||
+                              `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
+                          </p>
+                          {wish.emojis.length > 0 && (
+                            <p className="text-lg mt-1">{wish.emojis.join(' ')}</p>
+                          )}
+                          <div className="mt-2">
+                            <StarRating value={wish.rating} readonly size="sm" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Well closed message */}
-        {!well.is_active && (
-          <div className="mt-8 text-center bg-stone-50 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-stone-800 mb-2">
-              This well is closed
-            </h2>
-            <p className="text-stone-500">
-              {well.wish_count >= well.wish_limit
-                ? 'This well has collected all its wishes!'
-                : 'This well has expired.'}
-            </p>
-            <Link href="/explore" className="inline-block mt-4">
-              <Button variant="outline">Find Another Well</Button>
-            </Link>
-          </div>
-        )}
+          {/* Actions for visitors */}
+          {!isOwner && well.is_active && (
+            <div className="mb-8 text-center">
+              {hasAlreadySent ? (
+                <div className="bg-green-50/90 backdrop-blur rounded-2xl p-6 border border-green-100">
+                  <div className="text-3xl mb-2">✨</div>
+                  <p className="text-green-700 font-medium">You already sent a wish to this well!</p>
+                  <p className="text-green-600 text-sm mt-1">Your kindness has been received.</p>
+                  <Link href="/explore" className="inline-block mt-4">
+                    <Button variant="outline" size="sm">
+                      Find Another Well
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
+                  Send a Wish
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Well closed message */}
+          {!well.is_active && (
+            <div className="mb-8 text-center bg-stone-50/90 backdrop-blur rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-stone-800 mb-2">
+                This well is closed
+              </h2>
+              <p className="text-stone-500">
+                {well.wish_count >= well.wish_limit
+                  ? 'This well has collected all its wishes!'
+                  : 'This well has expired.'}
+              </p>
+              <Link href="/explore" className="inline-block mt-4">
+                <Button variant="outline">Find Another Well</Button>
+              </Link>
+            </div>
+          )}
+
+          {/* Time remaining */}
+          {well.is_active && (
+            <div className="text-center mb-4 text-stone-500">
+              <span className="text-sm">⏱️ {formatTimeRemaining(well.expires_at)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Well Display - at bottom */}
+        <div className="mt-auto">
+          <Well
+            context={well.context}
+            wishCount={well.wish_count}
+            wishLimit={well.wish_limit}
+            isActive={well.is_active}
+            averageRating={well.average_rating}
+            wellTheme={well.well_theme}
+            isOwner={isOwner}
+            ratedCount={ratedCount}
+            coins={wishes.map((w) => ({
+              id: w.id,
+              sentenceStarter: w.sentence_starter,
+              descriptors: w.descriptors,
+              outcome: w.outcome,
+              emojis: w.emojis,
+              customText: w.custom_text,
+              gifUrl: w.gif_url,
+              senderAvatar: null,
+              rating: w.rating,
+              isViewed: w.is_viewed,
+              coinTheme: w.coin_theme,
+            }))}
+            onFishCoin={isOwner ? handleFishCoin : undefined}
+            showFishButton={isOwner && unviewedCount > 0}
+          />
+        </div>
       </div>
 
       {/* Wish Composer Modal */}

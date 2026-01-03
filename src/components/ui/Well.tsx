@@ -207,7 +207,7 @@ export function Well({
       {/* Well structure - BOTTOM */}
       <div className="relative">
         {/* SVG Well illustration */}
-        <div className="relative mx-auto w-72 h-72">
+        <div className="relative mx-auto w-[36rem] h-[36rem]">
           <WellSVG
             className="w-full h-full drop-shadow-xl"
             theme={theme}
