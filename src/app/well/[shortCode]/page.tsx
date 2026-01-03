@@ -263,6 +263,12 @@ export default function WellPage({ params }: { params: PageParams }) {
       <div className="max-w-2xl mx-auto flex flex-col h-full">
         {/* Top content - grows to push well down */}
         <div className="flex-1 min-h-0 flex flex-col">
+          {/* Context card - What this well is for */}
+          <div className="mb-6 card-organic p-4 bg-[var(--bg-card)]/90 backdrop-blur">
+            <h3 className="text-sm font-medium text-[var(--text-muted)] mb-2">What this well is for:</h3>
+            <p className="text-[var(--text-primary)]">{well.context}</p>
+          </div>
+
           {/* Owner view - list of good wishes (3+ stars only) */}
           {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
             <div className="mb-8 flex-1 min-h-0 flex flex-col">

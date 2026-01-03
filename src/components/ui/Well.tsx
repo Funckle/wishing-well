@@ -140,13 +140,7 @@ export function Well({
 
   return (
     <div className="relative w-full max-w-md mx-auto flex flex-col">
-      {/* Context card - TOP */}
-      <div className="p-4 bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-stone-100 mb-6">
-        <h3 className="text-sm font-medium text-stone-500 mb-2">What this well is for:</h3>
-        <p className="text-stone-800">{context}</p>
-      </div>
-
-      {/* Progress indicator + Status badges - MIDDLE */}
+      {/* Progress indicator + Status badges - TOP */}
       <div className="mb-6">
         <div className="w-full max-w-xs mx-auto">
           <div className="flex justify-between text-sm text-stone-600 mb-1">
