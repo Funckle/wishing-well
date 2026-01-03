@@ -22,68 +22,41 @@ interface CoinProps {
   className?: string
 }
 
-// SVG Coin component with theme support
-function CoinSVG({
-  className = '',
-  theme,
-}: {
-  className?: string
-  theme: CoinTheme
-}) {
-  const c = theme.colors
-  return (
-    <svg
-      viewBox="0 0 36 36"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Shadow layer */}
-      <circle fill={c.shadow} cx="18" cy="19" r="17" />
-      {/* Main body */}
-      <circle fill={c.main} cx="18" cy="17" r="17" />
-      {/* Inner highlight */}
-      <circle fill={c.highlight} cx="18" cy="17" r="14" />
-      {/* Subtle inner ring */}
-      <circle fill="none" stroke={c.ring} strokeWidth="0.5" cx="18" cy="17" r="13" />
-      {/* Outer rim highlight */}
-      <circle fill="none" stroke={c.rimHighlight} strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
-    </svg>
-  )
-}
-
-// SVG for back of coin with star pattern
-function CoinBackSVG({
-  className = '',
-  theme,
-}: {
-  className?: string
-  theme: CoinTheme
-}) {
-  const c = theme.colors
-  return (
-    <svg
-      viewBox="0 0 36 36"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Shadow layer */}
-      <circle fill={c.backShadow} cx="18" cy="19" r="17" />
-      {/* Main body - slightly darker for back */}
-      <circle fill={c.backMain} cx="18" cy="17" r="17" />
-      {/* Inner area */}
-      <circle fill={c.backHighlight} cx="18" cy="17" r="14" />
-      {/* Decorative star pattern */}
-      <path
-        fill={c.backPattern}
-        d="M18 8 L19.5 14 L26 14 L21 18 L23 25 L18 21 L13 25 L15 18 L10 14 L16.5 14 Z"
-        opacity="0.6"
-      />
-      {/* Inner ring */}
-      <circle fill="none" stroke={c.backRing} strokeWidth="0.5" cx="18" cy="17" r="13" />
-      {/* Outer rim */}
-      <circle fill="none" stroke={c.backRimHighlight} strokeWidth="0.8" cx="18" cy="17" r="15.5" opacity="0.5" />
-    </svg>
-  )
+// Get gradient colors based on theme
+function getThemeGradient(theme: CoinTheme) {
+  const gradients: Record<string, { from: string; via: string; to: string; glow: string }> = {
+    gold: {
+      from: 'var(--color-honey, #E9B44C)',
+      via: 'var(--color-amber, #D4930D)',
+      to: 'var(--color-gold, #C9A227)',
+      glow: 'rgba(233, 180, 76, 0.3)',
+    },
+    silver: {
+      from: '#D1D5DB',
+      via: '#9CA3AF',
+      to: '#6B7280',
+      glow: 'rgba(156, 163, 175, 0.3)',
+    },
+    bronze: {
+      from: '#D97706',
+      via: '#B45309',
+      to: '#92400E',
+      glow: 'rgba(217, 119, 6, 0.3)',
+    },
+    'rose-gold': {
+      from: '#F472B6',
+      via: '#EC4899',
+      to: '#DB2777',
+      glow: 'rgba(244, 114, 182, 0.3)',
+    },
+    crystal: {
+      from: '#A5B4FC',
+      via: '#818CF8',
+      to: '#6366F1',
+      glow: 'rgba(129, 140, 248, 0.3)',
+    },
+  }
+  return gradients[theme.id] || gradients.gold
 }
 
 export function Coin({
@@ -96,6 +69,7 @@ export function Coin({
 }: CoinProps) {
   const [flipped, setFlipped] = useState(isFlipped)
   const theme = getCoinThemeById(coinTheme)
+  const gradient = getThemeGradient(theme)
 
   const sizeClasses = {
     sm: 'w-20 h-20',
@@ -109,10 +83,10 @@ export function Coin({
     lg: 'text-sm leading-tight',
   }
 
-  const paddingSizes = {
-    sm: 'p-2',
-    md: 'p-4',
-    lg: 'p-6',
+  const ringInset = {
+    sm: 'inset-1.5',
+    md: 'inset-2',
+    lg: 'inset-3',
   }
 
   const wishText = wish.customText ||
@@ -142,15 +116,43 @@ export function Coin({
           className="absolute inset-0 backface-hidden"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          {/* SVG coin background */}
-          <CoinSVG className="absolute inset-0 w-full h-full drop-shadow-lg" theme={theme} />
-          {/* Text overlay */}
-          <div className={`absolute inset-0 flex items-center justify-center ${paddingSizes[size]}`}>
-            <div className={`text-center ${textSizes[size]} ${theme.colors.textColor} font-medium`}>
-              <p className="break-words line-clamp-4">{wishText}</p>
-              {wish.emojis.length > 0 && (
-                <p className="mt-1">{wish.emojis.join(' ')}</p>
-              )}
+          <div className="relative w-full h-full">
+            {/* Outer glow */}
+            <div
+              className="absolute inset-0 rounded-full blur-xl"
+              style={{ backgroundColor: gradient.glow }}
+            />
+
+            {/* Coin body with gradient */}
+            <div
+              className="absolute inset-0 rounded-full shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${gradient.from} 0%, ${gradient.via} 50%, ${gradient.to} 100%)`,
+              }}
+            />
+
+            {/* Inner ring */}
+            <div
+              className={`absolute ${ringInset[size]} rounded-full border-2 opacity-40`}
+              style={{ borderColor: gradient.to }}
+            />
+
+            {/* Highlight overlay */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)',
+              }}
+            />
+
+            {/* Text content */}
+            <div className="absolute inset-0 flex items-center justify-center p-3">
+              <div className={`text-center ${textSizes[size]} font-medium ${theme.colors.textColor}`}>
+                <p className="break-words line-clamp-4">{wishText}</p>
+                {wish.emojis.length > 0 && (
+                  <p className="mt-1">{wish.emojis.join(' ')}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -163,19 +165,58 @@ export function Coin({
             transform: 'rotateY(180deg)'
           }}
         >
-          {/* SVG coin background */}
-          <CoinBackSVG className="absolute inset-0 w-full h-full drop-shadow-lg" theme={theme} />
-          {/* Center content */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            {wish.senderAvatar ? (
-              <img
-                src={wish.senderAvatar}
-                alt="Sender"
-                className="w-1/2 h-1/2 rounded-full object-cover border-2 border-amber-600"
-              />
-            ) : (
-              <span className="text-2xl">✨</span>
-            )}
+          <div className="relative w-full h-full">
+            {/* Outer glow */}
+            <div
+              className="absolute inset-0 rounded-full blur-xl"
+              style={{ backgroundColor: gradient.glow }}
+            />
+
+            {/* Coin body - slightly darker for back */}
+            <div
+              className="absolute inset-0 rounded-full shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${gradient.via} 0%, ${gradient.to} 50%, ${gradient.to} 100%)`,
+              }}
+            />
+
+            {/* Inner ring */}
+            <div
+              className={`absolute ${ringInset[size]} rounded-full border-2 opacity-40`}
+              style={{ borderColor: gradient.from }}
+            />
+
+            {/* Star pattern overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg viewBox="0 0 36 36" className="w-1/2 h-1/2 opacity-30">
+                <path
+                  fill={gradient.from}
+                  d="M18 8 L19.5 14 L26 14 L21 18 L23 25 L18 21 L13 25 L15 18 L10 14 L16.5 14 Z"
+                />
+              </svg>
+            </div>
+
+            {/* Highlight overlay */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%)',
+              }}
+            />
+
+            {/* Center content */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {wish.senderAvatar ? (
+                <img
+                  src={wish.senderAvatar}
+                  alt="Sender"
+                  className="w-1/2 h-1/2 rounded-full object-cover border-2"
+                  style={{ borderColor: gradient.from }}
+                />
+              ) : (
+                <span className="text-2xl">&#x2728;</span>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -186,9 +227,9 @@ export function Coin({
           {[...Array(5)].map((_, i) => (
             <span
               key={i}
-              className={`text-sm ${i < wish.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
+              className={`text-sm ${i < wish.rating! ? 'text-[var(--color-honey)]' : 'text-[var(--color-sand)]'}`}
             >
-              ★
+              &#x2605;
             </span>
           ))}
         </div>
@@ -237,7 +278,7 @@ export function CoinTossAnimation({
         animate={{ opacity: [0, 1, 0], scale: [0, 1.5, 2] }}
         transition={{ delay: 1.8, duration: 0.5 }}
       >
-        <div className="text-6xl">💦</div>
+        <div className="text-6xl">&#x1F4A6;</div>
       </motion.div>
     </motion.div>
   )
