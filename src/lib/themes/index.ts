@@ -37,7 +37,6 @@ export interface BackgroundTheme {
     via?: string
     to: string
   }
-  image: 'desert' | 'forest' | 'forest_path' | 'jungle' | 'mountains' | 'park' | 'planet' | 'savannah' | 'sunset' | null
 }
 
 export interface CoinTheme {
