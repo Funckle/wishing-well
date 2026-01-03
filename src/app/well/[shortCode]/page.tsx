@@ -248,12 +248,12 @@ export default function WellPage({ params }: { params: PageParams }) {
 
       <div className="max-w-2xl mx-auto flex flex-col h-full">
         {/* Top content - grows to push well down */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0 flex flex-col">
           {/* Owner view - list of good wishes (3+ stars only) */}
           {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-stone-800 mb-6">Your Wishes</h2>
-              <div className="space-y-4">
+            <div className="mb-8 flex-1 min-h-0 flex flex-col">
+              <h2 className="text-xl font-bold text-stone-800 mb-4 flex-shrink-0">Your Wishes</h2>
+              <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                 {wishes
                   .filter((wish) => wish.rating !== null && wish.rating >= 3)
                   .map((wish) => (
