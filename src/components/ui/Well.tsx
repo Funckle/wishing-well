@@ -126,12 +126,12 @@ export function Well({
 
   const unviewedCount = coins.filter(c => !c.isViewed).length
 
-  // Preview mode: just the well SVG
+  // Preview mode: just the well SVG, sized to fit container
   if (previewMode) {
     return (
-      <div className="relative w-full h-full flex items-end justify-center">
+      <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
         <WellSVG
-          className="w-full h-auto drop-shadow-xl"
+          className="h-[140%] w-auto drop-shadow-xl"
           theme={theme}
         />
       </div>
