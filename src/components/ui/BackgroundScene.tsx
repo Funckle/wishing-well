@@ -102,7 +102,7 @@ export function BackgroundScene({ theme, children, preview = false }: Background
         </div>
       )}
       {/* White overlay for reduced distraction */}
-      <div className="fixed inset-0 bg-white/50 pointer-events-none" />
+      <div className="fixed inset-0 bg-white/50 pointer-events-none z-[5]" />
       {/* Content */}
       <div className="relative z-10">{children}</div>
     </div>
