@@ -10,16 +10,21 @@ export interface WellTheme {
   label: string
   emoji: string
   colors: {
-    roof: string
-    roofAccent: string
-    poles: string
-    polesAccent: string
-    base: string
-    baseAccent: string
-    rim: string
-    rimAccent: string
-    rope: string
-    grass: string
+    // Roof colors (warm tones)
+    roof: string        // Main roof color
+    roofDark: string    // Roof shadow/dark areas
+    roofLight: string   // Roof highlights
+    roofMid: string     // Roof mid-tone
+    // Handle/Rope colors (cool tones)
+    rope: string        // Dark rope/handle
+    ropeMid: string     // Medium rope/handle
+    ropeLight: string   // Light rope/handle
+    // Stone/Well base colors (neutrals)
+    stone: string       // Main stone color
+    stoneDark: string   // Dark stone areas
+    stoneMid: string    // Medium stone
+    stoneLight: string  // Stone highlights
+    stoneAccent: string // Stone accent details
   }
 }
 
