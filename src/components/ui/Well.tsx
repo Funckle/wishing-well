@@ -124,8 +124,87 @@ export function Well({
   const unviewedCount = coins.filter(c => !c.isViewed).length
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      {/* Well structure */}
+    <div className="relative w-full max-w-md mx-auto flex flex-col">
+      {/* Context card - TOP */}
+      <div className="p-4 bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-stone-100 mb-6">
+        <h3 className="text-sm font-medium text-stone-500 mb-2">What this well is for:</h3>
+        <p className="text-stone-800">{context}</p>
+      </div>
+
+      {/* Progress indicator + Status badges - MIDDLE */}
+      <div className="mb-6">
+        <div className="w-full max-w-xs mx-auto">
+          <div className="flex justify-between text-sm text-stone-600 mb-1">
+            {isOwner ? (
+              <>
+                <span>{ratedCount} wishes opened</span>
+                <span>{wishLimit} total</span>
+              </>
+            ) : (
+              <>
+                <span>{wishCount}/{wishLimit} wishes</span>
+                <span>{wishCount >= wishLimit ? 'Full!' : `${wishLimit - wishCount} spots left`}</span>
+              </>
+            )}
+          </div>
+          <div className="w-full h-3 bg-stone-200/80 rounded-full overflow-hidden backdrop-blur">
+            <motion.div
+              className="h-full bg-gradient-to-r from-amber-400 to-yellow-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+
+        {/* Status badges */}
+        <div className="mt-3 flex justify-center gap-2">
+          {isActive ? (
+            <span className="px-3 py-1 bg-green-100/90 backdrop-blur text-green-700 rounded-full text-sm font-medium">
+              Active
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-stone-100/90 backdrop-blur text-stone-600 rounded-full text-sm font-medium">
+              Closed
+            </span>
+          )}
+          {averageRating && (
+            <span className="px-3 py-1 bg-amber-100/90 backdrop-blur text-amber-700 rounded-full text-sm font-medium flex items-center gap-1">
+              <span>★</span>
+              {averageRating.toFixed(1)}
+            </span>
+          )}
+        </div>
+
+        {/* Fish button - above well */}
+        {showFishButton && unviewedCount > 0 && (
+          <motion.button
+            className="mt-4 mx-auto block px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-medium shadow-lg disabled:opacity-50"
+            onClick={handleFish}
+            disabled={isFishing}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isFishing ? (
+              <span className="flex items-center gap-2">
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                >
+                  🎣
+                </motion.span>
+                Fishing...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                🎣 Fish out a coin ({unviewedCount} waiting)
+              </span>
+            )}
+          </motion.button>
+        )}
+      </div>
+
+      {/* Well structure - BOTTOM */}
       <div className="relative">
         {/* SVG Well illustration */}
         <div className="relative mx-auto w-72 h-72">
@@ -189,83 +268,6 @@ export function Well({
             )}
           </AnimatePresence>
         </div>
-
-        {/* Progress indicator */}
-        <div className="mt-6 w-full max-w-xs mx-auto">
-          <div className="flex justify-between text-sm text-stone-600 mb-1">
-            {isOwner ? (
-              <>
-                <span>{ratedCount} wishes opened</span>
-                <span>{wishLimit} total</span>
-              </>
-            ) : (
-              <>
-                <span>{wishCount}/{wishLimit} wishes</span>
-                <span>{wishCount >= wishLimit ? 'Full!' : `${wishLimit - wishCount} spots left`}</span>
-              </>
-            )}
-          </div>
-          <div className="w-full h-3 bg-stone-200 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-amber-400 to-yellow-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </div>
-
-        {/* Fish button */}
-        {showFishButton && unviewedCount > 0 && (
-          <motion.button
-            className="mt-6 mx-auto block px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-medium shadow-lg disabled:opacity-50"
-            onClick={handleFish}
-            disabled={isFishing}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isFishing ? (
-              <span className="flex items-center gap-2">
-                <motion.span
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                >
-                  🎣
-                </motion.span>
-                Fishing...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                🎣 Fish out a coin ({unviewedCount} waiting)
-              </span>
-            )}
-          </motion.button>
-        )}
-
-        {/* Status badges */}
-        <div className="mt-4 flex justify-center gap-2">
-          {isActive ? (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              ✨ Active
-            </span>
-          ) : (
-            <span className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-sm font-medium">
-              Closed
-            </span>
-          )}
-          {averageRating && (
-            <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium flex items-center gap-1">
-              <span>★</span>
-              {averageRating.toFixed(1)}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Context card */}
-      <div className="mt-8 p-4 bg-white rounded-2xl shadow-lg border border-stone-100">
-        <h3 className="text-sm font-medium text-stone-500 mb-2">What this well is for:</h3>
-        <p className="text-stone-800">{context}</p>
       </div>
     </div>
   )
