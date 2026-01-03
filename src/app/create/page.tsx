@@ -11,7 +11,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { generateShortCode, getWellUrl } from '@/lib/utils'
 import { addDays } from 'date-fns'
-import { WELL_THEMES, BACKGROUND_THEMES, getWellThemeById, getBackgroundThemeById } from '@/lib/themes'
+import { WELL_THEMES, BACKGROUND_THEMES, getBackgroundThemeById } from '@/lib/themes'
 
 const WISH_LIMITS = [3, 5, 10, 25, 50, 100]
 
@@ -23,18 +23,19 @@ export default function CreateWellPage() {
   // Require authentication to create wells
   if (!isLoading && !user) {
     return (
-      <main className="min-h-screen py-20 px-4 flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--bg-primary)] py-20 px-4 flex items-center justify-center">
+        <Nav />
         <div className="max-w-md w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-xl p-8 border border-stone-100 text-center"
+            className="card-organic p-8 text-center"
           >
-            <div className="text-6xl mb-4">🌟</div>
-            <h1 className="text-2xl font-bold text-stone-800 mb-2">
+            <div className="text-6xl mb-4">&#x1F31F;</div>
+            <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)] mb-2">
               Sign in to Create a Well
             </h1>
-            <p className="text-stone-500 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Create an account to open your wishing well, collect wishes,
               and rate them to reward kind wishers.
             </p>
@@ -48,9 +49,9 @@ export default function CreateWellPage() {
                 </Button>
               </Link>
             </div>
-            <p className="text-stone-400 text-sm mt-6">
+            <p className="text-[var(--text-faded)] text-sm mt-6">
               No account? You can still{' '}
-              <Link href="/explore" className="text-rose-500 hover:underline">
+              <Link href="/explore" className="text-[var(--color-coral)] hover:underline">
                 send wishes anonymously
               </Link>
             </p>
@@ -63,8 +64,12 @@ export default function CreateWellPage() {
   // Show loading state while checking auth
   if (isLoading) {
     return (
-      <main className="min-h-screen py-20 px-4 flex items-center justify-center">
-        <div className="text-stone-400">Loading...</div>
+      <main className="min-h-screen bg-[var(--bg-primary)] py-20 px-4 flex items-center justify-center">
+        <motion.div
+          className="w-10 h-10 border-3 border-[var(--color-coral)] border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        />
       </main>
     )
   }
@@ -81,6 +86,7 @@ export default function CreateWellPage() {
     shortCode: string
     url: string
   } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const handleCreate = async () => {
     if (context.trim().length < 10) {
@@ -120,23 +126,43 @@ export default function CreateWellPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <main className="min-h-screen pt-20 pb-8 px-4">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-20 pb-8 px-4">
       <Nav />
       <div className="max-w-xl mx-auto">
         {/* Progress indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-3 mb-8">
           {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`w-3 h-3 rounded-full transition-all ${
-                s <= step
-                  ? 'bg-gradient-to-r from-rose-400 to-pink-500'
-                  : 'bg-stone-200'
-              }`}
-            />
+            <div key={s} className="flex items-center">
+              <motion.div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-display font-semibold text-sm transition-all ${
+                  s < step
+                    ? 'bg-[var(--color-moss)] text-white'
+                    : s === step
+                    ? 'bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] text-white shadow-lg'
+                    : 'bg-[var(--color-sand)] text-[var(--text-faded)]'
+                }`}
+                initial={false}
+                animate={{ scale: s === step ? 1.1 : 1 }}
+              >
+                {s < step ? (
+                  <span>&#x2713;</span>
+                ) : (
+                  s
+                )}
+              </motion.div>
+              {s < 3 && (
+                <div
+                  className={`w-12 h-0.5 mx-2 transition-colors ${
+                    s < step ? 'bg-[var(--color-moss)]' : 'bg-[var(--color-sand)]'
+                  }`}
+                />
+              )}
+            </div>
           ))}
         </div>
 
@@ -148,15 +174,22 @@ export default function CreateWellPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-3xl shadow-xl p-8 border border-stone-100"
+              className="card-organic p-8"
             >
-              <h1 className="text-2xl font-bold text-stone-800 mb-2">
-                Open a Wishing Well
-              </h1>
-              <p className="text-stone-500 mb-6">
-                Share what you need encouragement for. This helps wish-senders
-                craft meaningful wishes.
-              </p>
+              <div className="text-center mb-6">
+                <motion.div
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] mb-4"
+                  whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
+                >
+                  <span className="text-2xl">&#x1FAAB;</span>
+                </motion.div>
+                <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)] mb-2">
+                  Open a Wishing Well
+                </h1>
+                <p className="text-[var(--text-muted)]">
+                  Share what you need encouragement for
+                </p>
+              </div>
 
               <Textarea
                 label="What's on your mind?"
@@ -173,7 +206,7 @@ export default function CreateWellPage() {
                 Continue
               </Button>
 
-              <p className="text-center text-stone-400 text-sm mt-4">
+              <p className="text-center text-[var(--text-faded)] text-sm mt-4">
                 You can share your well link anonymously or with friends
               </p>
             </motion.div>
@@ -186,19 +219,19 @@ export default function CreateWellPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-3xl shadow-xl p-8 border border-stone-100"
+              className="card-organic p-8"
             >
-              <h1 className="text-2xl font-bold text-stone-800 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)] mb-2">
                 Well Settings
               </h1>
-              <p className="text-stone-500 mb-6">
+              <p className="text-[var(--text-muted)] mb-6">
                 Customize your wishing well
               </p>
 
               {/* Live Preview */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-stone-600 mb-2">Preview</p>
-                <div className="relative overflow-hidden rounded-2xl border border-stone-200 h-48">
+                <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">Preview</p>
+                <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] h-48">
                   {(() => {
                     const bgTheme = getBackgroundThemeById(backgroundTheme)
                     const previewContent = (
@@ -222,7 +255,7 @@ export default function CreateWellPage() {
                     }
 
                     return (
-                      <div className="bg-gradient-to-b from-stone-50 to-stone-100 h-full">
+                      <div className="bg-gradient-to-b from-[var(--color-cream)] to-[var(--color-sand)] h-full">
                         {previewContent}
                       </div>
                     )
@@ -231,23 +264,25 @@ export default function CreateWellPage() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-stone-700 mb-3">
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3">
                   Number of wishes
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {WISH_LIMITS.map((limit) => (
-                    <button
+                    <motion.button
                       key={limit}
                       type="button"
                       onClick={() => setWishLimit(limit)}
                       className={`py-3 px-4 rounded-xl font-medium transition-all ${
                         wishLimit === limit
-                          ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-lg'
-                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          ? 'bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] text-white shadow-lg'
+                          : 'bg-[var(--color-sand)] text-[var(--text-secondary)] hover:bg-[var(--color-clay)] hover:text-[var(--text-primary)]'
                       }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       {limit}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
@@ -289,7 +324,7 @@ export default function CreateWellPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="text-red-500 text-sm mb-4"
+                    className="text-[var(--color-coral)] text-sm mb-4"
                   >
                     {error}
                   </motion.p>
@@ -305,7 +340,7 @@ export default function CreateWellPage() {
                 </Button>
               </div>
 
-              <p className="text-center text-stone-400 text-sm mt-4">
+              <p className="text-center text-[var(--text-faded)] text-sm mt-4">
                 Wells stay open for 7 days or until filled
               </p>
             </motion.div>
@@ -317,7 +352,7 @@ export default function CreateWellPage() {
               key="step3"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-3xl shadow-xl p-8 border border-stone-100 text-center"
+              className="card-organic p-8 text-center"
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -325,37 +360,37 @@ export default function CreateWellPage() {
                 transition={{ type: 'spring', delay: 0.2 }}
                 className="text-6xl mb-4"
               >
-                ✨
+                &#x2728;
               </motion.div>
 
-              <h1 className="text-2xl font-bold text-stone-800 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)] mb-2">
                 Your Well is Ready!
               </h1>
-              <p className="text-stone-500 mb-6">
+              <p className="text-[var(--text-muted)] mb-6">
                 Share this link to start collecting wishes
               </p>
 
               {/* QR Code */}
               <div className="flex justify-center mb-6">
-                <div className="bg-white p-4 rounded-2xl shadow-inner border border-stone-100">
+                <div className="bg-white p-4 rounded-2xl shadow-inner border border-[var(--border-subtle)]">
                   <QRCodeSVG value={createdWell.url} size={160} />
                 </div>
               </div>
 
               {/* URL */}
-              <div className="flex items-center gap-2 mb-6 bg-stone-50 rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-6 bg-[var(--color-sand)]/50 rounded-xl p-3">
                 <input
                   type="text"
                   readOnly
                   value={createdWell.url}
-                  className="flex-1 bg-transparent text-stone-700 text-sm outline-none"
+                  className="flex-1 bg-transparent text-[var(--text-primary)] text-sm outline-none"
                 />
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => copyToClipboard(createdWell.url)}
                 >
-                  Copy
+                  {copied ? 'Copied!' : 'Copy'}
                 </Button>
               </div>
 

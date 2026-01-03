@@ -25,17 +25,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseClasses =
-      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+      'btn-organic inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
 
     const variantClasses = {
       primary:
-        'bg-gradient-to-r from-rose-400 to-pink-500 text-white hover:from-rose-500 hover:to-pink-600 focus:ring-pink-400 shadow-lg shadow-pink-200',
+        'bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] text-white hover:from-[var(--color-coral-deep)] hover:to-[var(--color-terracotta-deep)] focus-visible:ring-[var(--color-coral)] shadow-lg',
       secondary:
-        'bg-gradient-to-r from-amber-400 to-yellow-500 text-white hover:from-amber-500 hover:to-yellow-600 focus:ring-yellow-400 shadow-lg shadow-yellow-200',
+        'bg-gradient-to-br from-[var(--color-honey)] to-[var(--color-amber)] text-white hover:from-[var(--color-amber)] hover:to-[var(--color-gold)] focus-visible:ring-[var(--color-honey)] shadow-lg',
       outline:
-        'border-2 border-stone-300 text-stone-700 hover:bg-stone-50 focus:ring-stone-400',
+        'border-2 border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-[var(--color-sand)] hover:border-[var(--color-clay)] focus-visible:ring-[var(--color-terracotta)] bg-[var(--bg-card)]',
       ghost:
-        'text-stone-600 hover:bg-stone-100 focus:ring-stone-400',
+        'text-[var(--text-secondary)] hover:bg-[var(--color-sand)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--color-terracotta)]',
     }
 
     const sizeClasses = {
@@ -49,8 +49,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
         disabled={disabled || isLoading}
-        whileHover={disabled || isLoading ? {} : { scale: 1.02 }}
-        whileTap={disabled || isLoading ? {} : { scale: 0.98 }}
+        whileHover={disabled || isLoading ? {} : { scale: 1.02, y: -1 }}
+        whileTap={disabled || isLoading ? {} : { scale: 0.98, y: 0 }}
         {...(props as React.ComponentProps<typeof motion.button>)}
       >
         {isLoading ? (

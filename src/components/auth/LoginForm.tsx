@@ -51,17 +51,17 @@ export function LoginForm({ onSuccess, showTitle = true }: LoginFormProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center p-6 bg-green-50 rounded-2xl"
+        className="text-center p-6 rounded-2xl bg-[var(--color-moss)]/10 border border-[var(--color-moss)]/20"
       >
-        <div className="text-4xl mb-4">✉️</div>
-        <h3 className="text-lg font-semibold text-green-800 mb-2">
+        <div className="text-4xl mb-4">&#x2709;&#xFE0F;</div>
+        <h3 className="font-display text-lg font-semibold text-[var(--color-moss-deep)] mb-2">
           Check your email!
         </h3>
-        <p className="text-green-600">
-          We sent a magic link to <strong>{email}</strong>. Click it to sign in.
+        <p className="text-[var(--color-moss)]">
+          We sent a magic link to <strong className="text-[var(--color-moss-deep)]">{email}</strong>. Click it to sign in.
         </p>
         <button
-          className="mt-4 text-sm text-green-700 underline"
+          className="mt-4 text-sm text-[var(--color-moss-deep)] underline underline-offset-2 hover:no-underline"
           onClick={() => setEmailSent(false)}
         >
           Use a different email
@@ -74,8 +74,8 @@ export function LoginForm({ onSuccess, showTitle = true }: LoginFormProps) {
     <div className="w-full max-w-sm mx-auto">
       {showTitle && (
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-stone-800">Welcome back</h2>
-          <p className="text-stone-500 mt-1">Sign in to manage your wishing wells</p>
+          <h2 className="font-display text-2xl font-semibold text-[var(--text-primary)]">Welcome back</h2>
+          <p className="text-[var(--text-muted)] mt-1">Sign in to manage your wishing wells</p>
         </div>
       )}
 
@@ -95,7 +95,7 @@ export function LoginForm({ onSuccess, showTitle = true }: LoginFormProps) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="text-red-500 text-sm"
+              className="text-[var(--color-coral)] text-sm"
             >
               {error}
             </motion.p>
@@ -114,10 +114,10 @@ export function LoginForm({ onSuccess, showTitle = true }: LoginFormProps) {
 
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-stone-200" />
+          <div className="w-full border-t border-[var(--border-default)]" />
         </div>
         <div className="relative flex justify-center">
-          <span className="px-3 bg-white text-sm text-stone-400">or continue with</span>
+          <span className="px-3 bg-[var(--bg-card)] text-sm text-[var(--text-faded)]">or continue with</span>
         </div>
       </div>
 

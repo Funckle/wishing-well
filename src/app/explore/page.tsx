@@ -10,6 +10,105 @@ import { createClient } from '@/lib/supabase/client'
 import { formatTimeRemaining, getSentWellIds } from '@/lib/utils'
 import type { Well } from '@/types/database'
 
+// Well card component
+function WellCard({ well, index }: { well: Well; index: number }) {
+  const progress = (well.wish_count / well.wish_limit) * 100
+  const spotsLeft = well.wish_limit - well.wish_count
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <Link href={`/well/${well.short_code}`}>
+        <div className="card-organic p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              {/* Context */}
+              <p className="text-[var(--text-primary)] font-medium mb-3 line-clamp-2 group-hover:text-[var(--color-terracotta)] transition-colors">
+                {well.context}
+              </p>
+
+              {/* Meta info */}
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-sand)]/50 text-[var(--text-muted)]">
+                  <span>&#x1FAAB;</span>
+                  {well.wish_count}/{well.wish_limit}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-blush)]/50 text-[var(--text-muted)]">
+                  <span>&#x23F1;&#xFE0F;</span>
+                  {formatTimeRemaining(well.expires_at)}
+                </span>
+                {spotsLeft <= 5 && spotsLeft > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-coral)]/10 text-[var(--color-coral)] text-xs font-medium">
+                    {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left!
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-shrink-0">
+              <Button size="sm" variant="secondary" className="group-hover:scale-105 transition-transform">
+                Send Wish
+              </Button>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mt-4 w-full h-2 bg-[var(--color-sand)]/50 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-[var(--color-honey)] to-[var(--color-amber)] rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, delay: index * 0.05 + 0.2 }}
+            />
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  )
+}
+
+// Empty state component
+function EmptyState({
+  icon,
+  title,
+  description,
+  showCTA = true
+}: {
+  icon: string
+  title: string
+  description: string
+  showCTA?: boolean
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="card-organic p-12 text-center"
+    >
+      <motion.div
+        className="text-6xl mb-4"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        dangerouslySetInnerHTML={{ __html: icon }}
+      />
+      <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-2">
+        {title}
+      </h2>
+      <p className="text-[var(--text-muted)] mb-6 max-w-sm mx-auto">
+        {description}
+      </p>
+      {showCTA && (
+        <Link href="/create">
+          <Button>Open a Well</Button>
+        </Link>
+      )}
+    </motion.div>
+  )
+}
+
 export default function ExplorePage() {
   const supabase = createClient()
   const { user } = useAuth()
@@ -76,124 +175,85 @@ export default function ExplorePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
+  // Filter out wells user has already sent to, and their own wells
+  const availableWells = wells.filter((well) =>
+    !sentWellIds.includes(well.id) && well.user_id !== user?.id
+  )
+
   return (
-    <main className="min-h-screen pt-20 pb-8 px-4">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-20 pb-12 px-4">
       <Nav />
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-stone-800 mb-3">
+
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-10"
+        >
+          <motion.div
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-honey)] to-[var(--color-amber)] mb-4"
+            whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
+          >
+            <span className="text-2xl">&#x1FAAB;</span>
+          </motion.div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-[var(--text-primary)] mb-2">
             Active Wishing Wells
           </h1>
-          <p className="text-stone-500">
+          <p className="text-[var(--text-muted)]">
             Choose a well to send your heartfelt wishes
           </p>
-        </div>
+        </motion.div>
 
-        {(() => {
-          // Filter out wells user has already sent to, and their own wells
-          const availableWells = wells.filter((well) =>
-            !sentWellIds.includes(well.id) && well.user_id !== user?.id
-          )
-
-          if (isLoading) {
-            return (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
-              </div>
-            )
-          }
-
-          if (wells.length === 0) {
-            return (
-              <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
-                <div className="text-6xl mb-4">🌙</div>
-                <h2 className="text-xl font-semibold text-stone-800 mb-2">
-                  No active wells right now
-                </h2>
-                <p className="text-stone-500 mb-6">
-                  Be the first to open a wishing well!
-                </p>
-                <Link href="/create">
-                  <Button>Open a Well</Button>
-                </Link>
-              </div>
-            )
-          }
-
-          if (availableWells.length === 0) {
-            return (
-              <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
-                <div className="text-6xl mb-4">✨</div>
-                <h2 className="text-xl font-semibold text-stone-800 mb-2">
-                  You&apos;ve sent wishes to all active wells!
-                </h2>
-                <p className="text-stone-500 mb-6">
-                  Check back later for new wells, or open your own.
-                </p>
-                <Link href="/create">
-                  <Button>Open a Well</Button>
-                </Link>
-              </div>
-            )
-          }
-
-          return (
-            <div className="grid gap-4">
-              {availableWells.map((well, index) => (
-              <motion.div
-                key={well.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Link href={`/well/${well.short_code}`}>
-                  <div className="bg-white rounded-2xl p-6 shadow-lg border border-stone-100 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <p className="text-stone-800 font-medium mb-2 line-clamp-2">
-                          {well.context}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-stone-500">
-                          <span className="flex items-center gap-1">
-                            🪙 {well.wish_count}/{well.wish_limit} wishes
-                          </span>
-                          <span className="flex items-center gap-1">
-                            ⏱️ {formatTimeRemaining(well.expires_at)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <Button size="sm" variant="secondary">
-                          Send Wish
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Progress bar */}
-                    <div className="mt-4 w-full h-2 bg-stone-100 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-amber-400 to-yellow-500"
-                        initial={{ width: 0 }}
-                        animate={{
-                          width: `${(well.wish_count / well.wish_limit) * 100}%`,
-                        }}
-                        transition={{ duration: 0.5, delay: index * 0.05 + 0.2 }}
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+        {/* Content */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <motion.div
+              className="w-10 h-10 border-3 border-[var(--color-coral)] border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            />
+          </div>
+        ) : error ? (
+          <EmptyState
+            icon="&#x1F614;"
+            title="Something went wrong"
+            description={error}
+            showCTA={false}
+          />
+        ) : wells.length === 0 ? (
+          <EmptyState
+            icon="&#x1F319;"
+            title="No active wells right now"
+            description="Be the first to open a wishing well and receive heartfelt wishes from others!"
+          />
+        ) : availableWells.length === 0 ? (
+          <EmptyState
+            icon="&#x2728;"
+            title="You've sent wishes to all active wells!"
+            description="Check back later for new wells, or open your own to receive wishes."
+          />
+        ) : (
+          <div className="space-y-4">
+            {availableWells.map((well, index) => (
+              <WellCard key={well.id} well={well} index={index} />
             ))}
-            </div>
-          )
-        })()}
+          </div>
+        )}
 
-        <div className="text-center mt-12">
-          <p className="text-stone-500 mb-4">Want to receive wishes yourself?</p>
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-center mt-12"
+        >
+          <hr className="divider-organic mb-8" />
+          <p className="text-[var(--text-muted)] mb-4">Want to receive wishes yourself?</p>
           <Link href="/create">
-            <Button>Open Your Own Well</Button>
+            <Button icon="&#x2728;">Open Your Own Well</Button>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </main>
   )

@@ -1,6 +1,24 @@
 import type { Metadata } from 'next'
+import { Fraunces, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { ThemeProvider } from '@/components/ThemeProvider'
+
+// Display font - warm, characterful serif
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+})
+
+// Body font - readable, friendly sans
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  variable: '--font-source-sans',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'Wishing Well - Send and Receive Heartfelt Wishes',
@@ -19,11 +37,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${fraunces.variable} ${sourceSans.variable} font-sans antialiased`}>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -217,21 +217,35 @@ export default function WellPage({ params }: { params: PageParams }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <motion.div
+          className="w-10 h-10 border-3 border-[var(--color-coral)] border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        />
       </div>
     )
   }
 
   if (error || !well) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="text-6xl mb-4">🔍</div>
-        <h1 className="text-2xl font-bold text-stone-800 mb-2">Well Not Found</h1>
-        <p className="text-stone-500 mb-6">This wishing well doesn&apos;t exist or has been removed.</p>
-        <Link href="/explore">
-          <Button>Browse Active Wells</Button>
-        </Link>
+      <main className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="card-organic p-12 text-center max-w-md"
+        >
+          <div className="text-6xl mb-4">&#x1F50D;</div>
+          <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)] mb-2">
+            Well Not Found
+          </h1>
+          <p className="text-[var(--text-muted)] mb-6">
+            This wishing well doesn&apos;t exist or has been removed.
+          </p>
+          <Link href="/explore">
+            <Button>Browse Active Wells</Button>
+          </Link>
+        </motion.div>
       </main>
     )
   }
@@ -252,7 +266,9 @@ export default function WellPage({ params }: { params: PageParams }) {
           {/* Owner view - list of good wishes (3+ stars only) */}
           {isOwner && wishes.filter((w) => w.rating !== null && w.rating >= 3).length > 0 && (
             <div className="mb-8 flex-1 min-h-0 flex flex-col">
-              <h2 className="text-xl font-bold text-stone-800 mb-4 flex-shrink-0">Your Wishes</h2>
+              <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-4 flex-shrink-0">
+                Your Wishes
+              </h2>
               <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                 {wishes
                   .filter((wish) => wish.rating !== null && wish.rating >= 3)
@@ -261,7 +277,7 @@ export default function WellPage({ params }: { params: PageParams }) {
                       key={wish.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow border border-stone-100"
+                      className="card-organic p-4 bg-[var(--bg-card)]/90 backdrop-blur"
                     >
                       <div className="flex items-start gap-4">
                         <Coin
@@ -277,7 +293,7 @@ export default function WellPage({ params }: { params: PageParams }) {
                           size="sm"
                         />
                         <div className="flex-1">
-                          <p className="text-stone-700">
+                          <p className="text-[var(--text-primary)]">
                             {wish.custom_text ||
                               `${wish.sentence_starter} ${wish.descriptors.join(' + ')} ${wish.outcome}`}
                           </p>
@@ -299,18 +315,26 @@ export default function WellPage({ params }: { params: PageParams }) {
           {!isOwner && well.is_active && (
             <div className="mb-8 text-center">
               {hasAlreadySent ? (
-                <div className="bg-green-50/90 backdrop-blur rounded-2xl p-6 border border-green-100">
-                  <div className="text-3xl mb-2">✨</div>
-                  <p className="text-green-700 font-medium">You already sent a wish to this well!</p>
-                  <p className="text-green-600 text-sm mt-1">Your kindness has been received.</p>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="card-organic p-6 bg-[var(--color-moss)]/10 border-[var(--color-moss)]/20"
+                >
+                  <div className="text-3xl mb-2">&#x2728;</div>
+                  <p className="text-[var(--color-moss-deep)] font-medium">
+                    You already sent a wish to this well!
+                  </p>
+                  <p className="text-[var(--color-moss)] text-sm mt-1">
+                    Your kindness has been received.
+                  </p>
                   <Link href="/explore" className="inline-block mt-4">
                     <Button variant="outline" size="sm">
                       Find Another Well
                     </Button>
                   </Link>
-                </div>
+                </motion.div>
               ) : (
-                <Button size="lg" onClick={() => setShowComposer(true)} icon="🪙">
+                <Button size="lg" onClick={() => setShowComposer(true)} icon="&#x1FAAB;">
                   Send a Wish
                 </Button>
               )}
@@ -319,11 +343,15 @@ export default function WellPage({ params }: { params: PageParams }) {
 
           {/* Well closed message */}
           {!well.is_active && (
-            <div className="mb-8 text-center bg-stone-50/90 backdrop-blur rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-stone-800 mb-2">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-8 text-center card-organic p-6 bg-[var(--bg-card)]/90 backdrop-blur"
+            >
+              <h2 className="font-display text-lg font-semibold text-[var(--text-primary)] mb-2">
                 This well is closed
               </h2>
-              <p className="text-stone-500">
+              <p className="text-[var(--text-muted)]">
                 {well.wish_count >= well.wish_limit
                   ? 'This well has collected all its wishes!'
                   : 'This well has expired.'}
@@ -331,13 +359,16 @@ export default function WellPage({ params }: { params: PageParams }) {
               <Link href="/explore" className="inline-block mt-4">
                 <Button variant="outline">Find Another Well</Button>
               </Link>
-            </div>
+            </motion.div>
           )}
 
           {/* Time remaining */}
           {well.is_active && (
-            <div className="text-center mb-4 text-stone-500">
-              <span className="text-sm">⏱️ {formatTimeRemaining(well.expires_at)}</span>
+            <div className="text-center mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-card)]/80 backdrop-blur text-sm text-[var(--text-muted)]">
+                <span>&#x23F1;&#xFE0F;</span>
+                {formatTimeRemaining(well.expires_at)}
+              </span>
             </div>
           )}
         </div>
@@ -399,12 +430,12 @@ export default function WellPage({ params }: { params: PageParams }) {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl my-8"
+              className="card-organic p-6 max-w-sm w-full my-8"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
-              <h2 className="text-xl font-semibold text-center text-stone-800 mb-4">
+              <h2 className="font-display text-xl font-semibold text-center text-[var(--text-primary)] mb-4">
                 How does this wish make you feel?
               </h2>
 
@@ -423,8 +454,8 @@ export default function WellPage({ params }: { params: PageParams }) {
                 />
               </div>
 
-              <div className="bg-stone-50 rounded-xl p-4 mb-6">
-                <p className="text-center text-stone-700">
+              <div className="bg-[var(--color-sand)]/50 rounded-xl p-4 mb-6">
+                <p className="text-center text-[var(--text-primary)]">
                   {currentWish.custom_text ||
                     `${currentWish.sentence_starter} ${currentWish.descriptors.join(' + ')} ${currentWish.outcome}`.trim()}
                 </p>
@@ -440,7 +471,7 @@ export default function WellPage({ params }: { params: PageParams }) {
                 <div className="flex justify-center mb-3">
                   <StarRating value={null} onChange={handleRate} size="lg" />
                 </div>
-                <p className="text-center text-xs text-stone-500">
+                <p className="text-center text-xs text-[var(--text-muted)]">
                   <span className="font-medium">3-5 stars:</span> Saves to your collection
                   <br />
                   <span className="font-medium">1-2 stars:</span> Counts but won&apos;t be saved
@@ -448,15 +479,15 @@ export default function WellPage({ params }: { params: PageParams }) {
               </div>
 
               {/* Skip button with explanation */}
-              <div className="border-t border-stone-100 pt-4">
+              <div className="border-t border-[var(--border-subtle)] pt-4">
                 <Button
                   variant="ghost"
-                  className="w-full text-stone-500"
+                  className="w-full"
                   onClick={handleSkip}
                 >
                   Skip this wish
                 </Button>
-                <p className="text-center text-xs text-stone-400 mt-2">
+                <p className="text-center text-xs text-[var(--text-faded)] mt-2">
                   Removes the wish entirely — it won&apos;t count or be saved
                 </p>
               </div>
@@ -479,7 +510,7 @@ export default function WellPage({ params }: { params: PageParams }) {
   }
 
   return (
-    <main className="h-screen overflow-hidden pt-20 pb-8 px-4">
+    <main className="h-screen overflow-hidden bg-[var(--bg-primary)] pt-20 pb-8 px-4">
       {pageContent}
     </main>
   )

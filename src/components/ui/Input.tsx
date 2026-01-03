@@ -13,22 +13,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
             {label}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+          className={`input-organic w-full px-4 py-3 rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-faded)] focus:outline-none ${
             error
-              ? 'border-red-300 focus:ring-red-400 focus:border-red-400'
-              : 'border-stone-200 focus:ring-rose-400 focus:border-rose-400 hover:border-stone-300'
+              ? 'border-[var(--color-coral)] focus:border-[var(--color-coral-deep)] focus:ring-2 focus:ring-[var(--color-coral)]/20'
+              : ''
           } ${className}`}
           {...props}
         />
-        {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-2 text-sm text-[var(--color-coral)]">{error}</p>}
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">{helperText}</p>
         )}
       </div>
     )
@@ -52,7 +52,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
             {label}
           </label>
         )}
@@ -61,26 +61,26 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ref={ref}
             value={value}
             maxLength={maxLength}
-            className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none ${
+            className={`input-organic w-full px-4 py-3 rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-faded)] resize-none focus:outline-none ${
               error
-                ? 'border-red-300 focus:ring-red-400 focus:border-red-400'
-                : 'border-stone-200 focus:ring-rose-400 focus:border-rose-400 hover:border-stone-300'
+                ? 'border-[var(--color-coral)] focus:border-[var(--color-coral-deep)] focus:ring-2 focus:ring-[var(--color-coral)]/20'
+                : ''
             } ${className}`}
             {...props}
           />
           {showCount && maxLength && (
             <span
-              className={`absolute bottom-2 right-3 text-xs ${
-                currentLength > maxLength * 0.9 ? 'text-amber-500' : 'text-stone-400'
+              className={`absolute bottom-3 right-3 text-xs ${
+                currentLength > maxLength * 0.9 ? 'text-[var(--color-coral)]' : 'text-[var(--text-faded)]'
               }`}
             >
               {currentLength}/{maxLength}
             </span>
           )}
         </div>
-        {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-2 text-sm text-[var(--color-coral)]">{error}</p>}
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">{helperText}</p>
         )}
       </div>
     )

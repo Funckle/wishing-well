@@ -13,9 +13,116 @@ import { createClient } from '@/lib/supabase/client'
 import { formatTimeRemaining, getWellUrl, getEmbedCode } from '@/lib/utils'
 import type { Well } from '@/types/database'
 
+// Stats card component
+function StatCard({
+  value,
+  label,
+  icon
+}: {
+  value: number | string
+  label: string
+  icon: string
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-12 h-12 rounded-xl bg-[var(--color-sand)] flex items-center justify-center text-xl">
+        <span dangerouslySetInnerHTML={{ __html: icon }} />
+      </div>
+      <div>
+        <div className="font-display text-2xl font-semibold text-[var(--text-primary)]">{value}</div>
+        <div className="text-sm text-[var(--text-muted)]">{label}</div>
+      </div>
+    </div>
+  )
+}
+
+// Well card for dashboard
+function WellCard({
+  well,
+  index,
+  onCopyLink,
+  onShowEmbed,
+  isActive
+}: {
+  well: Well
+  index: number
+  onCopyLink: (code: string) => void
+  onShowEmbed: (code: string) => void
+  isActive: boolean
+}) {
+  const progress = (well.wish_count / well.wish_limit) * 100
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={`card-organic p-6 ${!isActive ? 'opacity-70' : ''}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-[var(--text-primary)] font-medium mb-2 line-clamp-2">
+            {well.context}
+          </p>
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-sand)]/50 text-[var(--text-muted)]">
+              <span>&#x1FAAB;</span>
+              {well.wish_count}{isActive ? `/${well.wish_limit}` : ' wishes'}
+            </span>
+            {isActive && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-blush)]/50 text-[var(--text-muted)]">
+                <span>&#x23F1;&#xFE0F;</span>
+                {formatTimeRemaining(well.expires_at)}
+              </span>
+            )}
+            {!isActive && well.average_rating && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-honey)]/20 text-[var(--color-amber)]">
+                <span>&#x2B50;</span>
+                {well.average_rating.toFixed(1)} avg
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <Link href={`/well/${well.short_code}`}>
+            <Button size="sm">{isActive ? 'View' : 'View'}</Button>
+          </Link>
+          {isActive ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onCopyLink(well.short_code)}
+            >
+              Copy Link
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onShowEmbed(well.short_code)}
+            >
+              Embed
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {isActive && (
+        <div className="mt-4 w-full h-2 bg-[var(--color-sand)]/50 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-[var(--color-honey)] to-[var(--color-amber)] rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, profile, isLoading: authLoading, signOut } = useAuth()
+  const { user, profile, isLoading: authLoading } = useAuth()
   const supabase = createClient()
 
   const [wells, setWells] = useState<Well[]>([])
@@ -23,6 +130,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
   const [showUsernameGenerator, setShowUsernameGenerator] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -54,33 +162,41 @@ export default function DashboardPage() {
     }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+  const copyToClipboard = (code: string) => {
+    navigator.clipboard.writeText(getWellUrl(code))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <motion.div
+          className="w-10 h-10 border-3 border-[var(--color-coral)] border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        />
       </div>
     )
   }
 
   if (error) {
     return (
-      <main className="min-h-screen pt-20 pb-8 px-4">
+      <main className="min-h-screen bg-[var(--bg-primary)] pt-20 pb-8 px-4">
         <Nav />
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12 bg-white rounded-3xl shadow-lg">
-            <div className="text-6xl mb-4">😔</div>
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="card-organic p-12 text-center"
+          >
+            <div className="text-5xl mb-4">&#x1F614;</div>
+            <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-2">
               Something went wrong
             </h2>
-            <p className="text-stone-500 mb-6">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </div>
+            <p className="text-[var(--text-muted)] mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </motion.div>
         </div>
       </main>
     )
@@ -90,140 +206,118 @@ export default function DashboardPage() {
   const closedWells = wells.filter((w) => !w.is_active)
 
   return (
-    <main className="min-h-screen pt-20 pb-8 px-4">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-20 pb-12 px-4">
       <Nav />
+
       <div className="max-w-4xl mx-auto">
-        {/* Profile Stats */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-stone-100">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-2xl text-white font-bold">
+        {/* Profile Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-organic p-6 mb-8"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            {/* Avatar */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] flex items-center justify-center text-2xl text-white font-display font-bold shadow-lg">
               {profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
             </div>
+
+            {/* Name & Email */}
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-stone-800">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="font-display text-2xl font-semibold text-[var(--text-primary)]">
                   {profile?.username || 'Anonymous Wisher'}
                 </h1>
                 <button
                   onClick={() => setShowUsernameGenerator(true)}
-                  className="px-2 py-1 text-xs bg-stone-100 hover:bg-rose-100 text-stone-500 hover:text-rose-600 rounded-full transition"
+                  className="px-2.5 py-1 text-xs bg-[var(--color-sand)] hover:bg-[var(--color-coral)]/20 text-[var(--text-muted)] hover:text-[var(--color-coral)] rounded-full transition-colors"
                 >
                   Change
                 </button>
               </div>
-              <p className="text-stone-500">{user?.email}</p>
+              <p className="text-[var(--text-muted)]">{user?.email}</p>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-amber-500">
-                {profile?.total_points || 0}
-              </div>
-              <div className="text-sm text-stone-500">points earned</div>
-            </div>
+
+            {/* Points */}
+            <StatCard
+              value={profile?.total_points || 0}
+              label="points earned"
+              icon="&#x1F3C6;"
+            />
           </div>
 
           {/* Unlocks */}
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex flex-wrap gap-3">
             <div
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm ${
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
                 profile?.gif_enabled
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-stone-100 text-stone-400'
+                  ? 'bg-[var(--color-moss)]/20 text-[var(--color-moss-deep)]'
+                  : 'bg-[var(--color-sand)] text-[var(--text-faded)]'
               }`}
             >
-              <span>🎬</span>
+              <span>&#x1F3AC;</span>
               <span>GIFs {profile?.gif_enabled ? 'Unlocked' : '(50 pts)'}</span>
             </div>
             <div
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm ${
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${
                 profile?.custom_wish_enabled
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-stone-100 text-stone-400'
+                  ? 'bg-[var(--color-moss)]/20 text-[var(--color-moss-deep)]'
+                  : 'bg-[var(--color-sand)] text-[var(--text-faded)]'
               }`}
             >
-              <span>✍️</span>
-              <span>
-                Custom Wishes {profile?.custom_wish_enabled ? 'Unlocked' : '(100 pts)'}
-              </span>
+              <span>&#x270D;&#xFE0F;</span>
+              <span>Custom Wishes {profile?.custom_wish_enabled ? 'Unlocked' : '(100 pts)'}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <Link href="/create">
-            <div className="bg-gradient-to-r from-rose-400 to-pink-500 rounded-2xl p-6 text-white hover:shadow-lg transition cursor-pointer">
-              <div className="text-3xl mb-2">✨</div>
-              <h2 className="font-semibold text-lg">Open a New Well</h2>
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-[var(--color-coral)] to-[var(--color-terracotta)] rounded-2xl p-6 text-white cursor-pointer shadow-lg"
+            >
+              <div className="text-3xl mb-2">&#x2728;</div>
+              <h2 className="font-display text-lg font-semibold">Open a New Well</h2>
               <p className="text-white/80 text-sm">Collect wishes from others</p>
-            </div>
+            </motion.div>
           </Link>
           <Link href="/explore">
-            <div className="bg-gradient-to-r from-amber-400 to-yellow-500 rounded-2xl p-6 text-white hover:shadow-lg transition cursor-pointer">
-              <div className="text-3xl mb-2">🪙</div>
-              <h2 className="font-semibold text-lg">Send Wishes</h2>
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-[var(--color-honey)] to-[var(--color-amber)] rounded-2xl p-6 text-white cursor-pointer shadow-lg"
+            >
+              <div className="text-3xl">&#x1FAAB;</div>
+              <h2 className="font-display text-lg font-semibold">Send Wishes</h2>
               <p className="text-white/80 text-sm">Earn points by helping others</p>
-            </div>
+            </motion.div>
           </Link>
         </div>
 
         {/* Active Wells */}
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-stone-800 mb-4">
+        <section className="mb-10">
+          <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-[var(--color-moss)]/20 flex items-center justify-center text-sm">&#x2705;</span>
             Active Wells ({activeWells.length})
           </h2>
           {activeWells.length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 text-center border border-stone-100">
-              <p className="text-stone-500">No active wells. Create one to start collecting wishes!</p>
+            <div className="card-organic p-8 text-center">
+              <p className="text-[var(--text-muted)]">No active wells. Create one to start collecting wishes!</p>
             </div>
           ) : (
             <div className="space-y-4">
               {activeWells.map((well, index) => (
-                <motion.div
+                <WellCard
                   key={well.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white rounded-2xl p-6 shadow border border-stone-100"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-stone-800 font-medium mb-2 line-clamp-2">
-                        {well.context}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-stone-500">
-                        <span className="flex items-center gap-1">
-                          🪙 {well.wish_count}/{well.wish_limit}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          ⏱️ {formatTimeRemaining(well.expires_at)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link href={`/well/${well.short_code}`}>
-                        <Button size="sm">View</Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(getWellUrl(well.short_code))}
-                      >
-                        Copy Link
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="mt-4 w-full h-2 bg-stone-100 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-amber-400 to-yellow-500"
-                      initial={{ width: 0 }}
-                      animate={{
-                        width: `${(well.wish_count / well.wish_limit) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </motion.div>
+                  well={well}
+                  index={index}
+                  onCopyLink={copyToClipboard}
+                  onShowEmbed={setShowEmbedModal}
+                  isActive={true}
+                />
               ))}
             </div>
           )}
@@ -232,53 +326,39 @@ export default function DashboardPage() {
         {/* Closed Wells */}
         {closedWells.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold text-stone-800 mb-4">
+            <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-[var(--color-sand)] flex items-center justify-center text-sm">&#x1F4DA;</span>
               Past Wells ({closedWells.length})
             </h2>
             <div className="space-y-4">
               {closedWells.map((well, index) => (
-                <motion.div
+                <WellCard
                   key={well.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white rounded-2xl p-6 shadow border border-stone-100 opacity-80"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-stone-700 mb-2 line-clamp-2">{well.context}</p>
-                      <div className="flex items-center gap-4 text-sm text-stone-500">
-                        <span className="flex items-center gap-1">
-                          🪙 {well.wish_count} wishes
-                        </span>
-                        {well.average_rating && (
-                          <span className="flex items-center gap-1">
-                            ⭐ {well.average_rating.toFixed(1)} avg
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link href={`/well/${well.short_code}`}>
-                        <Button size="sm" variant="outline">
-                          View
-                        </Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setShowEmbedModal(well.short_code)}
-                      >
-                        Embed
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+                  well={well}
+                  index={index}
+                  onCopyLink={copyToClipboard}
+                  onShowEmbed={setShowEmbedModal}
+                  isActive={false}
+                />
               ))}
             </div>
           </section>
         )}
       </div>
+
+      {/* Copy notification */}
+      <AnimatePresence>
+        {copied && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--color-moss-deep)] text-white rounded-full text-sm shadow-lg"
+          >
+            Link copied!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Username Generator Modal */}
       <AnimatePresence>
@@ -295,7 +375,6 @@ export default function DashboardPage() {
                 return { error: new Error(error.message) }
               }
 
-              // Refresh the page to show updated username
               window.location.reload()
               return { error: null }
             }}
@@ -305,56 +384,64 @@ export default function DashboardPage() {
       </AnimatePresence>
 
       {/* Embed Modal */}
-      {showEmbedModal && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={() => setShowEmbedModal(null)}
-        >
+      <AnimatePresence>
+        {showEmbedModal && (
           <motion.div
-            className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowEmbedModal(null)}
           >
-            <h2 className="text-xl font-bold text-stone-800 mb-4">
-              Embed Your Well
-            </h2>
+            <motion.div
+              className="card-organic p-6 max-w-md w-full"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-4">
+                Embed Your Well
+              </h2>
 
-            <div className="flex justify-center mb-4">
-              <QRCodeSVG value={getWellUrl(showEmbedModal)} size={120} />
-            </div>
+              <div className="flex justify-center mb-4 p-4 bg-white rounded-xl">
+                <QRCodeSVG value={getWellUrl(showEmbedModal)} size={120} />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-stone-600 mb-2">
-                Embed Code
-              </label>
-              <textarea
-                readOnly
-                value={getEmbedCode(showEmbedModal)}
-                className="w-full h-24 p-3 text-xs bg-stone-50 rounded-xl border border-stone-200 font-mono"
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
+                  Embed Code
+                </label>
+                <textarea
+                  readOnly
+                  value={getEmbedCode(showEmbedModal)}
+                  className="input-organic w-full h-24 text-xs font-mono resize-none"
+                />
+              </div>
 
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowEmbedModal(null)}
-              >
-                Close
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={() => copyToClipboard(getEmbedCode(showEmbedModal))}
-              >
-                Copy Code
-              </Button>
-            </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowEmbedModal(null)}
+                >
+                  Close
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(getEmbedCode(showEmbedModal))
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                >
+                  Copy Code
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </main>
   )
 }
