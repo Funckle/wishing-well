@@ -69,7 +69,7 @@ function FloatingCoin({
         {/* Coin SVG */}
         <svg
           viewBox="0 0 36 36"
-          className="w-24 h-24 md:w-28 md:h-28 drop-shadow-lg"
+          className="w-32 h-32 md:w-40 md:h-40 drop-shadow-lg"
           xmlns="http://www.w3.org/2000/svg"
         >
           <circle fill="#D97706" cx="18" cy="19" r="17" />
@@ -80,12 +80,12 @@ function FloatingCoin({
         </svg>
 
         {/* Wish text overlay */}
-        <div className="absolute inset-0 flex items-center justify-center p-3">
+        <div className="absolute inset-0 flex items-center justify-center p-4 md:p-5">
           <div className="text-center">
-            <p className="text-[9px] md:text-[10px] text-amber-900 font-medium leading-tight">
+            <p className="text-[10px] md:text-xs text-amber-900 font-medium leading-tight">
               {wish.text}
             </p>
-            <p className="text-xs mt-0.5">{wish.emojis.join(' ')}</p>
+            <p className="text-sm mt-1">{wish.emojis.join(' ')}</p>
           </div>
         </div>
 
