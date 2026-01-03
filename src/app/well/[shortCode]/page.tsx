@@ -341,8 +341,8 @@ export default function WellPage({ params }: { params: PageParams }) {
             </div>
           )}
 
-          {/* Well closed message */}
-          {!well.is_active && (
+          {/* Well closed message - only for visitors */}
+          {!well.is_active && !isOwner && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
