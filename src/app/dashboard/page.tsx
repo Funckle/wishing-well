@@ -10,7 +10,7 @@ import { Nav } from '@/components/Nav'
 import { UsernameGenerator } from '@/components/UsernameGenerator'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
-import { formatTimeRemaining, getWellUrl, getEmbedCode } from '@/lib/utils'
+import { formatTimeRemaining, getWellUrl } from '@/lib/utils'
 import type { Well } from '@/types/database'
 
 // Stats card component
@@ -41,13 +41,13 @@ function WellCard({
   well,
   index,
   onCopyLink,
-  onShowEmbed,
+  onShare,
   isActive
 }: {
   well: Well
   index: number
   onCopyLink: (code: string) => void
-  onShowEmbed: (code: string) => void
+  onShare: (code: string) => void
   isActive: boolean
 }) {
   const progress = (well.wish_count / well.wish_limit) * 100
@@ -87,23 +87,13 @@ function WellCard({
           <Link href={`/well/${well.short_code}`}>
             <Button size="sm">{isActive ? 'View' : 'View'}</Button>
           </Link>
-          {isActive ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onCopyLink(well.short_code)}
-            >
-              Copy Link
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onShowEmbed(well.short_code)}
-            >
-              Embed
-            </Button>
-          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onShare(well.short_code)}
+          >
+            Share
+          </Button>
         </div>
       </div>
 
@@ -128,7 +118,7 @@ export default function DashboardPage() {
   const [wells, setWells] = useState<Well[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showEmbedModal, setShowEmbedModal] = useState<string | null>(null)
+  const [showShareModal, setShowShareModal] = useState<string | null>(null)
   const [showUsernameGenerator, setShowUsernameGenerator] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -315,7 +305,7 @@ export default function DashboardPage() {
                   well={well}
                   index={index}
                   onCopyLink={copyToClipboard}
-                  onShowEmbed={setShowEmbedModal}
+                  onShare={setShowShareModal}
                   isActive={true}
                 />
               ))}
@@ -337,7 +327,7 @@ export default function DashboardPage() {
                   well={well}
                   index={index}
                   onCopyLink={copyToClipboard}
-                  onShowEmbed={setShowEmbedModal}
+                  onShare={setShowShareModal}
                   isActive={false}
                 />
               ))}
@@ -383,15 +373,15 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* Embed Modal */}
+      {/* Share Modal */}
       <AnimatePresence>
-        {showEmbedModal && (
+        {showShareModal && (
           <motion.div
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowEmbedModal(null)}
+            onClick={() => setShowShareModal(null)}
           >
             <motion.div
               className="card-organic p-6 max-w-md w-full"
@@ -401,43 +391,84 @@ export default function DashboardPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] mb-4">
-                Embed Your Well
+                Share Your Well
               </h2>
 
-              <div className="flex justify-center mb-4 p-4 bg-white rounded-xl">
-                <QRCodeSVG value={getWellUrl(showEmbedModal)} size={120} />
+              <div className="flex justify-center mb-6 p-4 bg-white rounded-xl">
+                <QRCodeSVG value={getWellUrl(showShareModal)} size={140} />
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-[var(--text-muted)] mb-2">
-                  Embed Code
-                </label>
-                <textarea
-                  readOnly
-                  value={getEmbedCode(showEmbedModal)}
-                  className="input-organic w-full h-24 text-xs font-mono resize-none"
-                />
+              {/* Link display */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 bg-[var(--color-sand)]/50 rounded-xl p-3">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getWellUrl(showShareModal)}
+                    className="flex-1 bg-transparent text-[var(--text-primary)] text-sm outline-none"
+                  />
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(getWellUrl(showShareModal))
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    }}
+                  >
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowEmbedModal(null)}
-                >
-                  Close
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    navigator.clipboard.writeText(getEmbedCode(showEmbedModal))
-                    setCopied(true)
-                    setTimeout(() => setCopied(false), 2000)
-                  }}
-                >
-                  Copy Code
-                </Button>
+              {/* Social share buttons */}
+              <div className="mb-6">
+                <p className="text-sm font-medium text-[var(--text-muted)] mb-3">Share on</p>
+                <div className="grid grid-cols-4 gap-3">
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Send me a wish! 🌟')}&url=${encodeURIComponent(getWellUrl(showShareModal))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[var(--color-sand)]/30 hover:bg-[var(--color-sand)] transition-colors"
+                  >
+                    <span className="text-xl">𝕏</span>
+                    <span className="text-xs text-[var(--text-muted)]">Twitter</span>
+                  </a>
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getWellUrl(showShareModal))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[var(--color-sand)]/30 hover:bg-[var(--color-sand)] transition-colors"
+                  >
+                    <span className="text-xl">📘</span>
+                    <span className="text-xs text-[var(--text-muted)]">Facebook</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent('Send me a wish! 🌟 ' + getWellUrl(showShareModal))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[var(--color-sand)]/30 hover:bg-[var(--color-sand)] transition-colors"
+                  >
+                    <span className="text-xl">💬</span>
+                    <span className="text-xs text-[var(--text-muted)]">WhatsApp</span>
+                  </a>
+                  <a
+                    href={`mailto:?subject=${encodeURIComponent('Send me a wish!')}&body=${encodeURIComponent('Hey! I opened a wishing well and would love to receive your kind wishes. 🌟\n\n' + getWellUrl(showShareModal))}`}
+                    className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[var(--color-sand)]/30 hover:bg-[var(--color-sand)] transition-colors"
+                  >
+                    <span className="text-xl">✉️</span>
+                    <span className="text-xs text-[var(--text-muted)]">Email</span>
+                  </a>
+                </div>
               </div>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowShareModal(null)}
+              >
+                Done
+              </Button>
             </motion.div>
           </motion.div>
         )}

@@ -29,11 +29,6 @@ export function getWellUrl(shortCode: string): string {
   return `${baseUrl}/well/${shortCode}`
 }
 
-export function getEmbedCode(shortCode: string): string {
-  const url = getWellUrl(shortCode)
-  return `<iframe src="${url}/embed" width="400" height="500" frameborder="0" style="border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></iframe>`
-}
-
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
