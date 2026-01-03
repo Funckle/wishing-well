@@ -246,7 +246,7 @@ export default function WellPage({ params }: { params: PageParams }) {
       <Nav />
       <Confetti isActive={showConfetti} />
 
-      <div className="max-w-2xl mx-auto flex flex-col min-h-[calc(100vh-6rem)]">
+      <div className="max-w-2xl mx-auto flex flex-col h-full">
         {/* Top content - grows to push well down */}
         <div className="flex-1">
           {/* Owner view - list of good wishes (3+ stars only) */}
@@ -471,7 +471,7 @@ export default function WellPage({ params }: { params: PageParams }) {
   if (backgroundTheme) {
     return (
       <BackgroundScene theme={backgroundTheme}>
-        <main className="min-h-screen pt-20 pb-8 px-4">
+        <main className="h-screen overflow-hidden pt-20 pb-8 px-4">
           {pageContent}
         </main>
       </BackgroundScene>
@@ -479,7 +479,7 @@ export default function WellPage({ params }: { params: PageParams }) {
   }
 
   return (
-    <main className="min-h-screen pt-20 pb-8 px-4">
+    <main className="h-screen overflow-hidden pt-20 pb-8 px-4">
       {pageContent}
     </main>
   )
