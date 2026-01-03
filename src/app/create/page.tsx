@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import { Button, Textarea, Input, ThemePicker, BackgroundScene, Well } from '@/components/ui'
+import { Button, Textarea, ThemePicker, BackgroundScene, Well } from '@/components/ui'
 import { Nav } from '@/components/Nav'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
@@ -77,7 +77,6 @@ export default function CreateWellPage() {
   const [step, setStep] = useState(1)
   const [context, setContext] = useState('')
   const [wishLimit, setWishLimit] = useState(10)
-  const [notificationEmail, setNotificationEmail] = useState('')
   const [wellTheme, setWellTheme] = useState('classic')
   const [backgroundTheme, setBackgroundTheme] = useState<string | null>('none')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -107,7 +106,6 @@ export default function CreateWellPage() {
         context: context.trim(),
         wish_limit: wishLimit,
         expires_at: expiresAt,
-        notification_email: notificationEmail || null,
         well_theme: wellTheme,
         background_theme: backgroundTheme === 'none' ? null : backgroundTheme,
       })
@@ -304,17 +302,6 @@ export default function CreateWellPage() {
                   selected={backgroundTheme}
                   onChange={setBackgroundTheme}
                   columns={3}
-                />
-              </div>
-
-              <div className="mb-6">
-                <Input
-                  type="email"
-                  label="Get notified when wishes arrive (optional)"
-                  placeholder="your@email.com"
-                  value={notificationEmail}
-                  onChange={(e) => setNotificationEmail(e.target.value)}
-                  helperText="We'll email you when new wishes arrive"
                 />
               </div>
 
